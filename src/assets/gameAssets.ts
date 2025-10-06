@@ -3,6 +3,7 @@ import farmerInvert from './icons/farmerInvert.png'
 import farmerWalk from './icons/farmerWalk.gif'
 import farmerWalkInvert from './icons/farmerWalkInvert.gif'
 import tree from './icons/JungleTree.png'
+import pet from './icons/pet.gif'
 import plot from "./icons/plot.png"
 import seed from "./icons/seed.png"
 import corn1 from "./icons/corn1.png"
@@ -24,6 +25,7 @@ const ASSETS = {
   farmerWalkInvert: farmerWalkInvert,
   laLibertadMap: laLibertadMap,
   tree: tree,
+  pet: pet,
   plotStages: [
     plot, // empty plot
     seed, // sown seed
