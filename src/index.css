@@ -1,0 +1,113 @@
+:root {
+  --bg: #0f172a;        /* slate-900 */
+  --panel: #111827bf;     /* gray-900 */
+  --text: #e5e7eb;      /* gray-200 */
+  --accent: #22c55e;    /* green-500 */
+  --warn: #f59e0b;      /* amber-500 */
+  --bad: #ef4444;       /* red-500 */
+  --good: #10b981;      /* emerald-500 */
+  --tile: #1f2937;      /* gray-800 */
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; background: radial-gradient(1000px 600px at 100% 0, #0b1223 0%, var(--bg) 45%); color: var(--text); }
+
+.app { max-width: 1100px; margin: 24px auto; padding: 16px; }
+.hud { display:flex; gap:12px; align-items:center; flex-wrap: wrap; margin-bottom: 16px; }
+.card { background: var(--panel); border: 1px solid #1f2937; border-radius: 12px; padding: 12px 14px; }
+.kpi { display:flex; gap:10px; align-items:center; }
+.bar { position:relative; width: 220px; height: 14px; background:#0b1220; border-radius: 999px; overflow:hidden; border:1px solid #1f2937; }
+.bar > span { position:absolute; inset:0 0 0 auto; width: var(--w); background: linear-gradient(90deg, #1dd1a1, #10b981); }
+.bar.warn > span { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+
+.grid { display:grid; grid-template-columns: repeat(12, 36px); grid-auto-rows: 36px; gap: 6px; justify-content:center; padding:16px; background: #0b1220; border:1px solid #1f2937; border-radius: 16px; }
+.tile { width:36px; height:36px; border-radius: 6px; display:grid; place-items:center; font-size: 11px; color:#0b1220; border:1px solid #0f172a; }
+.tile.empty { background:#0a1722; border-color:#0b2030; }
+.tile.crop.healthy { background:#22c55e; }
+.tile.crop.stress { background:#f59e0b; }
+.tile.crop.dead { background:#ef4444; }
+
+.row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.btn { background:#1f2937; color:var(--text); padding:10px 14px; border:1px solid #374151; border-radius:10px; cursor:pointer; }
+.btn:hover { background:#273244; }
+.btn.primary { background:#2563eb; border-color:#1d4ed8; }
+.btn.primary:hover { background:#1e40af; }
+.badge { padding:4px 8px; border-radius:8px; border:1px solid #1f2937; background:#0b1220; font-size:12px; }
+
+.footer { display:flex; justify-content:space-between; align-items:center; margin-top: 14px; opacity:.9; }
+
+/*  */
+
+/* Pantalla de inicio */
+.start-wrap{
+  --green:#80c56e; --green-dark:#5fa455; --wood:#8b5e34; --wood-dark:#6f4727;
+  --text:#fff7de; --shadow:#1b2a3a;
+  min-height: 100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  background:
+    radial-gradient(800px 400px at 50% -10%, #a8e6a2 0%, #7ccf70 40%, #58a65a 70%) no-repeat;
+  padding: 32px 16px;
+  image-rendering: pixelated;
+  background: url(./assets/icons/soil.png) center;
+  background-repeat: no-repeat;
+}
+
+.title-board img{
+  width: 350px;
+}
+
+/* granjero y elementos laterales "pixel" */
+.hero{ margin: 18px 0 10px; display:flex; gap:32px; align-items:flex-end;position: relative; margin-left: 100px;}
+.hero img{
+  max-width: 80px;
+}
+.hero img:first-child{    
+  position: absolute;
+  left: -160px;;
+  max-width: 160px;
+}
+
+/* botones de clima */
+.weather-grid{ display:grid; grid-template-columns:repeat(2, 96px); gap:12px; margin: 10px 0 14px; }
+.wx-btn{
+  height: 86px; 
+    background: transparent;
+    border: none;
+    display: grid;
+    place-items: center;
+}
+.wx-btn img {
+  width: 80px;
+}
+
+.start-btn{
+  width: 220px; height: 46px; background:#ffd46b; color:#1c1608; font-weight:800;
+  border:4px solid #d6a73b; border-radius:14px; cursor:pointer; letter-spacing:1px;
+  box-shadow:0 6px 0 #b3822c;
+}
+.start-btn:active{ transform: translateY(2px); box-shadow:0 4px 0 #b3822c; }
+
+.name-input {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.name-input label {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.name-input input {
+  width: 200px;
+  padding: 8px;
+  border: 2px solid #d6a73b;
+  border-radius: 8px;
+  font-size: 16px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+}
