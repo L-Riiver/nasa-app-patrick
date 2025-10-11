@@ -49,6 +49,11 @@ export default function Game() {
     setWeatherTutorialCompleted,
     setFinalTutorialCompleted,
     finalTutorialCompleted,
+    setTutorialShown,
+    setRiverTutorialCompleted,
+    setShopTutorialCompleted,
+    setCloseShopTutorialCompleted,
+    setPlantTutorialCompleted,
     nearestId,
     setPlots,
     setInventory,
@@ -136,46 +141,76 @@ export default function Game() {
         
       {!tutorialShown && (
         <div className="tutorial-modal">
-          Use WASD or arrow keys (↑ → ↓ ←) to move around the map.
+          <button
+            className="skip-tutorial-btn"
+            onClick={() => {
+              setTutorialShown(true);
+              setRiverTutorialCompleted(true);
+              setShopTutorialCompleted(true);
+              setSeedTutorialCompleted(true);
+              setCloseShopTutorialCompleted(true);
+              setPlantTutorialCompleted(true);
+              setWeatherTutorialCompleted(true);
+              setFinalTutorialCompleted(true);
+            }}
+          >
+            SKIP TUTORIAL
+          </button>
+          <span className="tutorial-text">Use WASD or arrow keys (↑ → ↓ ←) to move around the map.</span>
         </div>
       )}
 
       {tutorialShown && !riverTutorialCompleted && (
         <div className="tutorial-modal">
-          Go to the river and press R to collect water.
+          <button
+            className="skip-tutorial-btn"
+            onClick={() => {
+              setTutorialShown(true);
+              setRiverTutorialCompleted(true);
+              setShopTutorialCompleted(true);
+              setSeedTutorialCompleted(true);
+              setCloseShopTutorialCompleted(true);
+              setPlantTutorialCompleted(true);
+              setWeatherTutorialCompleted(true);
+              setFinalTutorialCompleted(true);
+            }}
+          >
+            SKIP TUTORIAL
+          </button>
+          <span className="tutorial-text">Go to the river and press R to collect water.</span>
         </div>
       )}
 
       {riverTutorialCompleted && !shopTutorialCompleted && (
         <div className="tutorial-modal">
-          Open the shop whit ESC.
+          <span className="tutorial-text">Open the shop whit ESC.</span>
         </div>
       )}
 
       {seedTutorialCompleted && !closeShopTutorialCompleted && (
         <div className="tutorial-modal zindex">
-          Close the shop whit ESC and go to the available plot.
+          <span className="tutorial-text">Close the shop whit ESC and go to the available plot.</span>
         </div>
       )}
 
       {closeShopTutorialCompleted && !plantTutorialCompleted && (
         <div className="tutorial-modal">
-          Go to the plot, press R to water and E to plant.
+          <span className="tutorial-text">Go to the plot, press R to water and E to plant.</span>
         </div>
       )}
 
       {plantTutorialCompleted && !weatherTutorialCompleted && (
         <div className="tutorial-modal">
-          Clic on the phone to open
+          <span className="tutorial-text">Clic on the phone to open</span>
         </div>
       )}
 
       {weatherTutorialCompleted && !finalTutorialCompleted && (
         <div className="tutorial-modal">
-          <p>With the cell phone you can see the weather in the following months.</p>
-          <p>You have a limit of 5 actions per month.</p>
-          <p>You can skip the month with the Skip Time button at the top.</p>
-          <p>Get luck.</p>
+          <span className="tutorial-text">With the cell phone you can see the weather in the following months.</span>
+          <span className="tutorial-text">You have a limit of 5 actions per month.</span>
+          <span className="tutorial-text">You can skip the month with the Skip Time button at the top.</span>
+          <span className="tutorial-text">Get luck.</span>
           <button
           className="finish-tutorial-btn"
           onClick={() => {

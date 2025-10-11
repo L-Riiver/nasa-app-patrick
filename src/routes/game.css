@@ -114,7 +114,7 @@
   gap: 8px;
   margin-top: 15px;
 }
-.controls-btn, .shop-btn, .skip-time-btn, .finish-tutorial-btn {
+.controls-btn, .shop-btn, .skip-time-btn, .finish-tutorial-btn, .skip-tutorial-btn {
   background: var(--grass);
   border: 2px solid var(--grass2);
   color: var(--text);
@@ -571,7 +571,7 @@
 
 /* Tutorial modal */
 .tutorial-modal {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -587,6 +587,10 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
+}
+
+.tutorial-text {
+  margin-top: 20px;
 }
 
 /* Map Selector */
