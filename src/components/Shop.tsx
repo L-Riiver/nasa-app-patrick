@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Inventory, Item } from '../game/core/types';
 import { useGame } from '../game/state/store';
+import ASSETS from '../assets/gameAssets';
 
 interface ShopProps {
   currency: number;
@@ -97,24 +98,34 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
         href: '🪣'
       }
     },
+    // {
+    //   id: 'tree',
+    //   name: 'Jungle Tree',
+    //   type: 'decorative',
+    //   price: 25,
+    //   icon: {
+    //     type: 'emoji',
+    //     href: '🌳'
+    //   }
+    // },
+    // {
+    //   id: 'bush',
+    //   name: 'Bush',
+    //   type: 'decorative',
+    //   price: 20,
+    //   icon: {
+    //     type: 'emoji',
+    //     href: '🌿'
+    //   }
+    // },
     {
-      id: 'tree',
-      name: 'Jungle Tree',
+      id: 'pet',
+      name: 'Pet',
       type: 'decorative',
-      price: 25,
+      price: 500,
       icon: {
-        type: 'emoji',
-        href: '🌳'
-      }
-    },
-    {
-      id: 'bush',
-      name: 'Bush',
-      type: 'decorative',
-      price: 20,
-      icon: {
-        type: 'emoji',
-        href: '🌿'
+        type: 'url',
+        href: ASSETS.pet
       }
     },
   ];
@@ -230,8 +241,13 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
               maxText = decorations.includes(item.id) ? ' (Owned)' : '';
             }
             return (
-              <div className='shop-item' key={item.id}>
-                {item.icon.href} {item.name}{getModifierText(item.id)}{maxText} - {item.price} <button onClick={() => buyItem(item)} disabled={disabled}>Buy</button>
+              <div className='shop-item' key={item.id} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <div>
+                  {item.icon.type === 'url' ? <img src={item.icon.href} alt={item.name} width="20" height="20" /> : item.icon.href} {item.name}{getModifierText(item.id)}{maxText}
+                </div>
+                <div>
+                  {item.price}🪙 <button onClick={() => buyItem(item)} disabled={disabled}>Buy</button>
+                </div>
               </div>
             );
           })}
@@ -241,7 +257,7 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
           <button onClick={sellAll} disabled={inventory.filter(i => i.type === 'crop' && i.quantity > 0).length === 0}>Sell All</button>
           {inventory.filter(i => i.type === 'crop' && i.quantity > 0).map(item => (
             <div className='shop-item' key={item.id}>
-              {item.icon.href} {item.name}: {item.quantity} - {item.price} each <button onClick={() => sellItem(item.id)}>Sell</button>
+              {item.icon.href} {item.name}: {item.quantity} - {item.price}🪙 each <button onClick={() => sellItem(item.id)}>Sell</button>
             </div>
           ))}
         </div>
