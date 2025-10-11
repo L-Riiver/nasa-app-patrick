@@ -1,7 +1,8 @@
-import React from 'react';
+/*  */import React from 'react';
 import type { Inventory, Item } from '../game/core/types';
 import { useGame } from '../game/state/store';
 import ASSETS from '../assets/gameAssets';
+import { PLOT_COSTS } from '../game/core/constants';
 
 interface ShopProps {
   currency: number;
@@ -24,6 +25,11 @@ interface ShopProps {
 
 export default function Shop({ currency, setCurrency, inventory, setInventory, numPlots, setNumPlots, waterTanks, setWaterTanks, plots, setPlots, decorations, setDecorations, show, onClose, onSeedBought, seedTutorialCompleted }: ShopProps) {
   const selectedDistrict = useGame(state => state.selectedDistrict);
+
+  const getPlotPrice = (currentPlots: number): number => {
+    if (currentPlots >= 9) return 0;
+    return PLOT_COSTS[currentPlots - 1];
+  };
 
   const districtModifiers: Record<string, Record<string, number>> = {
     'Trujillo': { 'corn-seed': 2, 'potato': -1, 'blueberry-seed': 0 },
@@ -82,7 +88,7 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
       id: 'plot',
       name: 'Plot',
       type: 'plot',
-      price: 50,
+      price: getPlotPrice(numPlots),
       icon: {
         type: 'emoji',
         href: '🌱'

@@ -1,0 +1,12 @@
+Enviar a CODE en lugar de ORQUESTATION:
+
+Necesito realizar un cambio complejo, por lo que analiza bien los pasos a seguir. Quiero agregar una mecánica a mi juego para que el jugador solo pueda realizar 5 acciones por mes las cuales serían (recolectar agua, regar y plantar), también habra una barra de acciones para que sea más facil de saber cuantas acciones le quedan en el mes, luego de realizar las 5 acciones, automáticamente se pasará al mes siguiente, cambiar de mes tiene implicaciones, debido a que ahora el cultivo solo crecerá después de ser plantado, la parcela se encuentre con humedad y haya pasado un mes para su crecimiento en una etapa. En caso no se cumplan las condiciones el cultivo permanece en su estado y en caso el jugador quiera skipear el mes puede hacerlo con el botón de la parte superior "skip time" lo cual en caso se cumplan los requisitos el cultivo crecerá en una etapa. Recuerda que ahora el plot solo se podra regar y plantar como acciones, pero el crecimiento que ahora serán 4 etapas(existen 4 png por cada etapa de crecimiento en lugar de 3) será solamente con el pasar de los meses
+
+
+
+
+
+
+agregar gallina para intercambiar semillas por huevos
+agregar aviso cuando se agregue agua a la parcela (+💧)
+agregar distintas imagenes de cultivos segun la semilla

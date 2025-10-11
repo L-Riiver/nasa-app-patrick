@@ -7,3 +7,7 @@ export const RAIN_TO_MOISTURE = 1/20; // 5mm => +0.25
 export const MOISTURE_OK = { min: 0.3, max: 0.85 };
 export const RIVER_POSITION = { x: 62, y: 482 };
 export const MAX_TANK_CAPACITY = 10;
+export const ACTIONS_PER_MONTH = 3;
+
+// Costs for buying additional plots (player starts with 1, can buy up to 8 more)
+export const PLOT_COSTS = [5, 7, 10, 13, 16, 19, 22, 25] as const;

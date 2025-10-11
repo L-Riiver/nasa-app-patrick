@@ -3,6 +3,7 @@ import { useInventory } from '../hooks/useInventory';
 import { useGame } from '../game/state/store';
 import type { InventoryItem } from '../game/core/types';
 import TurnCounter from './HUD/TurnCounter';
+import ActionBar from './HUD/ActionBar';
 
 export const HUDPanel: React.FC<HUDPanelProps> = ({ showControls, setShowControls }) => {
   const { seeds, crops, selectedSeedId, selectSeed } = useInventory();
@@ -16,6 +17,7 @@ export const HUDPanel: React.FC<HUDPanelProps> = ({ showControls, setShowControl
   return (
     <div className="hud-panel">
       <TurnCounter currentTurn={resources.turn} onNextTurn={nextTurn} />
+      <ActionBar />
       <div className="hud-section">
         <h4>Seeds (Select One)</h4>
         {seeds.map(item => (
@@ -52,22 +54,20 @@ export const HUDPanel: React.FC<HUDPanelProps> = ({ showControls, setShowControl
         </div>
       </div>
       <div className="hud-buttons">
-        <button className="controls-btn" onClick={() => setShowControls(!showControls)}>
-          Controls
-        </button>
         <button className="shop-btn" onClick={toggleShop}>
           Shop
         </button>
+        <button className="controls-btn" onClick={() => setShowControls(!showControls)}>
+          Controls
+        </button>
       </div>
-      {showControls && (
-        <div className="controls-popup">
+        <div className={`controls-popup ${showControls ? 'show':''}`}>
           <strong>E:</strong> Sow / Harvest<br/>
           <strong>R:</strong> Irrigate / Regar<br/>
           <strong>N:</strong> Turn / Turno<br/>
           <strong>TAB:</strong> Cycle Seeds<br/>
           <strong>ESC:</strong> Shop
         </div>
-      )}
     </div>
   );
 };

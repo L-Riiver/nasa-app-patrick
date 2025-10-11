@@ -9,6 +9,7 @@ import seed from "./icons/seed.png"
 import corn1 from "./icons/corn1.png"
 import corn2 from "./icons/corn2.png"
 import corn3 from "./icons/corn3.png"
+import corn4 from "./icons/corn4.png"
 import riverImg from './icons/river.png'
 import lowerRiverImg from './icons/lowerRiver.png'
 import dryRiverImg from './icons/dryRiver.png'
@@ -32,7 +33,7 @@ const ASSETS = {
     corn1, // growing
     corn2, // growing
     corn3, // almost harvest
-    corn1, // harvestable
+    corn4, // harvestable
   ],
   stageIrrigate: stageIrrigate, // imagen para cuando la parcela está regada
 };

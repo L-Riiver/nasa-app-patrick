@@ -125,14 +125,24 @@
   flex: 1;
   max-height: fit-content;
 }
-.controls-popup {
-  margin-top: 10px;
+.controls-popup {    
+  position: absolute;
   padding: 10px;
-  background: rgba(0,0,0,0.1);
+  background: var(--panel);
   border-radius: 6px;
-  font-size: 13px;
   line-height: 1.4;
+  bottom: 0;
+  opacity: 0;
+  transition: opacity .1s ease, transform .1s ease-in-out;
+  right: 0px;
+  pointer-events: none;
 }
+
+.controls-popup.show{
+  transform: translateX(150px);
+  opacity: 1;
+}
+
 
 /* Panel de lluvia */
 .rain-panel{
@@ -671,5 +681,27 @@
   font-weight: bold;
   color: #333;
   text-align: center;
+}
+/* Action Bar */
+.action-bar {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.action-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--panel2);
+}
+
+.action-dot.active {
+  background: var(--grass);
+}
+
+.action-dot.inactive {
+  background: var(--earth);
 }
 

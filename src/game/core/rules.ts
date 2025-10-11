@@ -2,7 +2,7 @@ import type { Forecast, Plot, Stage } from "./types";
 import { EVAP_PER_TURN, MOISTURE_OK, RAIN_TO_MOISTURE } from "./constants";
 
 const clampStage = (n: number): Stage =>
-  (n < 0 ? 0 : n > 4 ? 4 : Math.floor(n)) as Stage;
+  (n < 0 ? 0 : n > 5 ? 5 : Math.floor(n)) as Stage;
 
 export const incStage = (s: Stage): Stage => clampStage(s + 1);
 export const decStage = (s: Stage): Stage => clampStage(s - 1);
@@ -18,21 +18,20 @@ export function rollForecast(): Forecast {
 }
 
 export function stepGrowth(p: Plot, fc: Forecast): Plot {
-  if (!p.alive) return p;
+   if (!p.alive) return p;
 
-  const rainMoisture = fc.mm * RAIN_TO_MOISTURE;
-  const moisture = clamp01(p.moisture + rainMoisture - EVAP_PER_TURN);
+   const rainMoisture = fc.mm * RAIN_TO_MOISTURE;
+   const moisture = clamp01(p.moisture + rainMoisture - EVAP_PER_TURN);
 
-  let stage = p.stage;
+   let stage = p.stage;
 
-  if (stage > 0 && stage < 4){
-    if (moisture >= MOISTURE_OK.min && moisture <= MOISTURE_OK.max) stage = incStage(stage);
-    else if (moisture < 0.15 && stage > 1) stage = decStage(stage);
-  }
+   if (stage > 0 && stage < 5 && moisture >= MOISTURE_OK.min) {
+     stage = incStage(stage);
+   }
 
-  const alive = !(moisture <= 0.05 && stage > 0);
-  return { ...p, stage, moisture, alive, isIrrigated: false };
-}
+   const alive = !(moisture <= 0.05 && stage > 0);
+   return { ...p, stage, moisture, alive };
+ }
 
 export function ndviProxy(plots: Plot[]): number {
   const planted = plots.filter(p => p.stage > 0 && p.alive);

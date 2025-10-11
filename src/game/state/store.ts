@@ -2,8 +2,8 @@ import { create } from "zustand";
 import type {
   Forecast, Inventory, Plot, Player, SeedRef, Stage
 } from "../../game/core/types";
-import { INTERACT_RADIUS, PLAYER, SCENE, RIVER_POSITION, MAX_TANK_CAPACITY } from "../../game/core/constants";
-import { rollForecast } from "../../game/core/rules";
+import { INTERACT_RADIUS, PLAYER, SCENE, RIVER_POSITION, MAX_TANK_CAPACITY, ACTIONS_PER_MONTH } from "../../game/core/constants";
+import { rollForecast, stepGrowth } from "../../game/core/rules";
 
 // export type PlotStage = 0|1|2|3|4|5; // 0 suelo, 1 brote… 5 dorado/cosecha
 export type PlotStage = 0|1; // 0 suelo, 1 brote… 5 dorado/cosecha
@@ -90,7 +90,7 @@ type GameState = {
   resetPlots: (n: number) => void;
 
   // recursos / meta
-  resources: { waterTanks: number[]; currency: number; turn: number };
+  resources: { waterTanks: number[]; currency: number; turn: number; actionsRemaining: number };
   numPlots: number;
   decorations: string[];
 
@@ -177,14 +177,14 @@ const MOISTURE_IRRIGATION_DELTA = 0.25;
 export const useGame = create<GameState>((set, get) => ({
   player: { x: 360, y: 430, w: PLAYER.w, h: PLAYER.h, facing: "right" },
   plots: makePlots(1),
-  forecast: rollForecast(),
+  forecast: { mm: 0.5 + Math.random()*1.5, label: "ligera" as const },
   ndvi: 0,
   grid: makeGrid(),
   res: { water:100, aquifer:60, turns:1, score:{prod:0,sost:0,res:0} },
   weather: nextForecast(),
   drought: false,
   selectedAction: null,
-  resources: { waterTanks: [0], currency: 20, turn: 1 },
+  resources: { waterTanks: [0], currency: 20, turn: 1, actionsRemaining: ACTIONS_PER_MONTH },
   numPlots: 1,
   isNearRiver: false,
   decorations: [],
@@ -320,6 +320,9 @@ export const useGame = create<GameState>((set, get) => ({
 
   /* siembra/crecimiento/cosecha como en tu versión larga */
   plant(){
+    const { resources } = get();
+    if (resources.actionsRemaining <= 0) return;
+
     const id = get().nearestId();
     console.log('plant: nearestId', id);
     if (!id) return;
@@ -328,13 +331,14 @@ export const useGame = create<GameState>((set, get) => ({
     const target = plots.find(p => p.id===id)!;
 
     // si está maduro, cosecha directo (comportamiento original)
-    if (target.stage === 4) {
+    if (target.stage === 5) {
       get().harvest(id);
       return;
     }
 
     // si está vacío, siembra usando semilla seleccionada e inventario
     if (target.stage === 0) {
+      if (!target.isIrrigated) return;
       const selId = get().selectedSeedId;
       if (!selId) return;
 
@@ -356,24 +360,21 @@ export const useGame = create<GameState>((set, get) => ({
             }
           : p
         ),
-        plantTutorialCompleted: true
+        plantTutorialCompleted: true,
+        resources: { ...s.resources, actionsRemaining: s.resources.actionsRemaining - 1 }
       }));
+      if (get().resources.actionsRemaining === 0) {
+        get().nextTurn();
+      }
       return;
     }
-
-    // si está entre 1 y 4, “crecimiento forzado” + pequeña subida de humedad (tu atajo)
-    set(s => ({
-      plots: s.plots.map(p =>
-        p.id===id && p.stage>0 && p.stage<5
-          ? { ...p, stage: incStage(p.stage), moisture: Math.min(1, p.moisture + 0.1) }
-          : p
-      )
-    }));
   },
 
   harvest(id){
+    const { resources } = get();
+    if (resources.actionsRemaining <= 0) return;
     const p = get().plots.find(pl => pl.id===id);
-    if (!p || p.stage!==4 || !p.seed) return;
+    if (!p || p.stage!==5 || !p.seed) return;
 
     const inv = structuredClone(get().inventory) as Inventory;
 
@@ -403,20 +404,25 @@ export const useGame = create<GameState>((set, get) => ({
       inventory: inv,
       plots: s.plots.map(pl => pl.id === id
         ? { ...pl, stage: 0 as const, seed: null }
-        : pl)
+        : pl),
+      resources: { ...s.resources, actionsRemaining: s.resources.actionsRemaining - 1 }
     }));
+    if (get().resources.actionsRemaining === 0) {
+      get().nextTurn();
+    }
   },
 
   irrigate() {
     console.log('IRRRIGATE CALLED');
-    const { isNearRiver, setRiverTutorialCompleted, player, plots, resources, setWaterTanks, updatePlot } = get();
+    const { isNearRiver, setRiverTutorialCompleted, player, plots, resources, setWaterTanks, updatePlot, forecast } = get();
+    if (resources.actionsRemaining <= 0) return;
     if (isNearRiver) setRiverTutorialCompleted(true);
 
     const playerCenter = { x: player.x + player.w / 2, y: player.y + player.h / 2 };
     const riverDist = dist(playerCenter.x, playerCenter.y, RIVER_POSITION.x, RIVER_POSITION.y);
 
-    // Check if near river and fill tank
-    if (riverDist <= 162) {
+    // Check if near river and fill tank, but not when river is dry
+    if (riverDist <= 162 && forecast.label !== "seca") {
       const fillIndex = resources.waterTanks.findIndex(t => t < MAX_TANK_CAPACITY);
       if (fillIndex !== -1) {
         setWaterTanks(prev => {
@@ -424,6 +430,10 @@ export const useGame = create<GameState>((set, get) => ({
           newTanks[fillIndex] = Math.min(MAX_TANK_CAPACITY, newTanks[fillIndex] + 1);
           return newTanks;
         });
+        set(state => ({ resources: { ...state.resources, actionsRemaining: state.resources.actionsRemaining - 1 } }));
+        if (get().resources.actionsRemaining === 0) {
+          get().nextTurn();
+        }
         console.log('TANK FILLED');
       }
     }
@@ -458,6 +468,10 @@ export const useGame = create<GameState>((set, get) => ({
           moisture: clamp01(nearestPlot.moisture + MOISTURE_IRRIGATION_DELTA),
           isIrrigated: true
         });
+        set(state => ({ resources: { ...state.resources, actionsRemaining: state.resources.actionsRemaining - 1 } }));
+        if (get().resources.actionsRemaining === 0) {
+          get().nextTurn();
+        }
         console.log('PLOT IRRIGATED', nearestPlot.id);
       } else {
         console.log('NO WATER IN TANKS');
@@ -468,7 +482,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   
   nextTurn: ()=>{
-    const { grid, res, weather, drought } = get();
+    const { grid, res, weather, drought, plots, forecast, resources } = get();
     // recarga acuífero si llueve
     const aquiferGain = weather.rainMm > 3 ? 2 : weather.rainMm>0 ? 1 : 0;
     const newAquifer = Math.min(100, res.aquifer + aquiferGain);
@@ -493,6 +507,10 @@ export const useGame = create<GameState>((set, get) => ({
   return {...t, moisture, stage};
     });
 
+    // Apply growth to plots
+    const newForecast = rollForecast();
+    const nextPlots = plots.map(p => stepGrowth(p, newForecast));
+
     // nueva predicción y sequía aleatoria
     const nw = nextForecast();
     const ndrought = Math.random()<0.12 ? true : Math.random()<0.6 ? drought : false;
@@ -504,9 +522,12 @@ export const useGame = create<GameState>((set, get) => ({
 
     set({
       grid: nextGrid,
+      plots: nextPlots,
+      forecast: newForecast,
       res: { water: res.water, aquifer: newAquifer, turns: res.turns+1, score:{prod:res.score.prod, sost, res:resil} },
       weather: nw,
-      drought: ndrought
+      drought: ndrought,
+      resources: { ...resources, turn: resources.turn + 1, actionsRemaining: ACTIONS_PER_MONTH }
     });
   },
 
@@ -545,6 +566,7 @@ export const useGame = create<GameState>((set, get) => ({
   reset: ()=> set({
     grid: makeGrid(),
     res: { water:100, aquifer:60, turns:1, score:{prod:0,sost:0,res:0} },
+    forecast: { mm: 0.5 + Math.random()*1.5, label: "ligera" as const },
     weather: nextForecast(),
     drought:false,
     selectedAction:null,
@@ -558,6 +580,7 @@ export const useGame = create<GameState>((set, get) => ({
     finalTutorialCompleted: false,
     selectedRegion: "",
     selectedDistrict: "",
-    playerName: ""
+    playerName: "",
+    resources: { waterTanks: [0], currency: 20, turn: 1, actionsRemaining: ACTIONS_PER_MONTH }
   })
 }));

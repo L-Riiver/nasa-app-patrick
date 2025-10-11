@@ -51,4 +51,5 @@ export type Resources = {
   waterTanks: number[];  // cada tanque 0..10
   currency: number;
   turn: number;
+  actionsRemaining: number;  // acciones restantes en el mes
 };
