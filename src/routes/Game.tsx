@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Shop from "../components/Shop";
 import ClimatePanel from "../components/ClimatePanel";
@@ -7,24 +7,20 @@ import { Player } from "../components/Player";
 import { Plots } from "../components/Plots";
 import { Tanks } from "../components/Tanks"
 import { Decorations } from "../components/Decorations";
+import River from "../components/River";
 import { usePlayerMovement } from "../hooks/usePlayerMovement";
 import { useGameActions } from "../hooks/useGameActions";
 import { useGame } from "../game/state/store";
 import "./game.css";
 import ASSETS from "../assets/gameAssets";
-import River from "../components/River";
 
-const PLAYER = { w: 65, h: 105, speed: 250 };
-
-// Rio coordinates
-const RIVER_X = -150;
-const RIVER_Y = 0; // bottom
-const RIVER_WIDTH = 390;
-const RIVER_HEIGHT = 650;
-const RIVER_CENTER_X = RIVER_X + RIVER_WIDTH / 2;
-const RIVER_CENTER_Y = 450; // scene height 630
+// const PLAYER = { w: 65, h: 105, speed: 250 };
 
 export default function Game() {
+  const [showMonthAnimation, setShowMonthAnimation] = useState(false);
+  const [showPugCongrats, setShowPugCongrats] = useState(false);
+  const [pugMonths, setPugMonths] = useState(0);
+
   // Use hooks for state and logic
   const { player, frameFarmer } = usePlayerMovement();
   const { setCurrency, setDecorations, toggleControls, setNumPlots, toggleShop } = useGameActions();
@@ -58,7 +54,8 @@ export default function Game() {
     setPlots,
     setInventory,
     setWaterTanks,
-    numPlots } = useGame();
+    numPlots,
+    isNearHen } = useGame();
 
   // const [frameFarmer, setFrameFarmer] = useState(ASSETS.farmerWalk)
   // const [facingRight, setFacingRight] = useState(false);
@@ -71,27 +68,27 @@ export default function Game() {
   // const [plots, setPlots] = useState<Plot[]>(() => makePlots(numPlots));
   const plotsRef = useRef(plots);
 
-  // cerca del río para recolectar agua
-  const isNearRiver = useMemo(() => {
-    const playerCenterX = player.x + PLAYER.w / 2;
-    const playerCenterY = player.y + PLAYER.h / 2;
-    return (Math.hypot(playerCenterX-RIVER_CENTER_X, playerCenterY-RIVER_CENTER_Y) < 200);
-  }, [player]);
 
   useEffect(() => { plotsRef.current = plots; }, [plots]);
   const forecastRef = useRef(forecast);
   useEffect(() => { forecastRef.current = forecast; }, [forecast]);
-  const isNearRiverRef = useRef(isNearRiver);
-  useEffect(() => { isNearRiverRef.current = isNearRiver; }, [isNearRiver]);
 
   const showShopRef = useRef(showShop);
   useEffect(() => { showShopRef.current = showShop; }, [showShop]);
+
+  // Trigger animation when turn increases
+  useEffect(() => {
+    if (resources.turn > 1) {
+      setShowMonthAnimation(true);
+      const timer = setTimeout(() => setShowMonthAnimation(false), 1000); // 1 second animation
+      return () => clearTimeout(timer);
+    }
+  }, [resources.turn]);
 
   /* ----------------- acciones ----------------- */
 
   const nav = useNavigate();
 
-  const riverImage = forecast.label === 'fuerte' || forecast.label === 'moderada' ? ASSETS.riverImg : forecast.label === 'ligera' ? ASSETS.lowerRiverImg : ASSETS.dryRiverImg;
 
   return (
     <>
@@ -118,25 +115,30 @@ export default function Game() {
           show={showShop}
           onClose={() => toggleShop()}
           onSeedBought={() => setSeedTutorialCompleted(true)}
-          seedTutorialCompleted={seedTutorialCompleted} />
+          seedTutorialCompleted={seedTutorialCompleted}
+          onPugPurchased={(months) => { setPugMonths(months); setShowPugCongrats(true); }} />
 
         {/* Climate panel */}
         <ClimatePanel currentTurn={resources.turn} currentForecast={forecast} onExpand={() => setWeatherTutorialCompleted(true)} isWeatherTutorialActive={plantTutorialCompleted && !weatherTutorialCompleted} selectedDistrict={selectedDistrict} />
 
-        {/* Pronóstico */}
+        {/* Río */}
         <River forecast={forecast} player={player} setIsNearRiver={setIsNearRiver} />
-        
-        {/* Rio */}
-        <img src={riverImage} alt="River" className={`river ${isNearRiver ? "focus" : ""}`} style={{ left: RIVER_X, bottom: RIVER_Y, width: RIVER_WIDTH, height: RIVER_HEIGHT }} />
 
         <Player player={player} frameFarmer={frameFarmer} nearest={!!nearestId()} finalTutorialCompleted={finalTutorialCompleted} />
+
+        {isNearHen() && (
+          <div className="feed-prompt">
+            Press E to feed
+          </div>
+        )}
 
         {/* Tanques de agua */}
         <Tanks />
         
         <Plots plots={plots} nearestId={nearestId() || undefined} />
+<Decorations decorations={decorations} />
 
-        <Decorations decorations={decorations} />
+
 
         
       {!tutorialShown && (
@@ -220,6 +222,30 @@ export default function Game() {
         </div>
       )}
       </div>
+{/* Rain overlay when weather is Modest or Heavy */}
+{(forecast.label === 'moderada' || forecast.label === 'fuerte') && (
+  <div className="rain-overlay">
+    <img src={ASSETS.rainGif} alt="Rain" className="rain-gif" />
+  </div>
+)}
+{/* Month animation overlay */}
+{showMonthAnimation && (
+<div className="month-animation-overlay"></div>
+)}
+
+{/* Pug Congratulations Modal */}
+{showPugCongrats && (
+<div className="pug-congrats-modal">
+<div className="pug-congrats-content">
+<h2>Congratulations!</h2>
+<p>You got the Pug in {pugMonths} months!</p>
+<div className="pug-congrats-buttons">
+ <button onClick={() => { if (window.confirm("¿Estás seguro de que quieres salir? Perderás tu progreso.")) { nav("/"); } }}>Exit</button>
+ <button onClick={() => setShowPugCongrats(false)}>Continue Playing</button>
+</div>
+</div>
+</div>
+)}
     </>
   )
 }

@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import type {
-  Forecast, Inventory, Plot, Player, SeedRef, Stage
+  Forecast, Inventory, Plot, Player, SeedRef
 } from "../../game/core/types";
-import { INTERACT_RADIUS, PLAYER, SCENE, RIVER_POSITION, MAX_TANK_CAPACITY, ACTIONS_PER_MONTH } from "../../game/core/constants";
+import { INTERACT_RADIUS, PLAYER, SCENE, RIVER_POSITION, MAX_TANK_CAPACITY, ACTIONS_PER_MONTH, EGG_PRICE } from "../../game/core/constants";
+import ASSETS from "../../assets/gameAssets";
 import { rollForecast, stepGrowth } from "../../game/core/rules";
 
 // export type PlotStage = 0|1|2|3|4|5; // 0 suelo, 1 brote… 5 dorado/cosecha
@@ -18,7 +19,6 @@ const clampScene = (x:number,y:number) => ({
   y: Math.max(0, Math.min(SCENE.h - PLAYER.h, y)),
 });
 const dist = (ax:number,ay:number,bx:number,by:number) => Math.hypot(ax-bx, ay-by);
-const incStage = (s: Stage): Stage => Math.min(5, (s + 1) as Stage) as Stage;
 
 function nearestPlotId(player: Player, plots: Plot[]) {
   const cx = player.x + player.w/2, cy = player.y + player.h/2;
@@ -47,7 +47,9 @@ function makePlots(n: number): Plot[] {
         stage: 0 as const,
         moisture: 0.25,
         alive: true,
-        isIrrigated: false,
+        hydrated: false,
+        lastMonthWet: false,
+        lastMonthManual: false,
         seed: null
       });
       idx++;
@@ -122,6 +124,7 @@ type GameState = {
   setFinalTutorialCompleted: (completed: boolean) => void;
   plant(): void;                   // si stage 0: siembra; 1-4: crecimiento forzado; 5: cosecha
   harvest(id: string): void;
+  feedHen(): void;                 // drop seed on hen to get egg
   irrigate(): void;                // gasta 1 del primer tanque con agua, +humedad y marca irrigado
   nextTurn(): void;                // aplica lluvia y evap, limpia isIrrigated
 
@@ -147,6 +150,7 @@ type GameState = {
   toggleControls(): void;
 
   setIsNearRiver: (isNearRiver: boolean) => void;
+  isNearHen: () => boolean;
   setWaterTanks: (next: number[] | ((prev: number[]) => number[])) => void;
   addWaterTank: (value: number) => void;
   clearWaterTanks: () => void;
@@ -184,17 +188,18 @@ export const useGame = create<GameState>((set, get) => ({
   weather: nextForecast(),
   drought: false,
   selectedAction: null,
-  resources: { waterTanks: [0], currency: 20, turn: 1, actionsRemaining: ACTIONS_PER_MONTH },
+  resources: { waterTanks: [0], currency: 50, turn: 1, actionsRemaining: ACTIONS_PER_MONTH },
   numPlots: 1,
   isNearRiver: false,
   decorations: [],
   inventory: [
-    { id:"corn-seed", name:"Corn Seed", type:"seed", quantity:1, price: 3, icon:{ type:"emoji", href:"🌽" } },
-    { id:"blueberry-seed", name:"Blueberry Seed", type:"seed", quantity:0, price: 5, icon:{ type:"emoji", href:"🫐" } },
-    { id:"corn", name:"Corn", type:"crop", quantity:0, price: 12, icon:{ type:"emoji", href:"🌽" } },
-    { id:"potato", name:"Potato", type:"crop", quantity:0, price: 4, icon:{ type:"emoji", href:"🥔" } },
-    { id:"blueberry", name:"Blueberry", type:"crop", quantity:0, price: 18, icon:{ type:"emoji", href:"🫐" } },
-  ],
+   { id:"corn-seed", name:"Corn Seed", type:"seed", quantity:0, price: 8, icon:{ type:"emoji", href:"🌽" } },
+   { id:"blueberry-seed", name:"Blueberry Seed", type:"seed", quantity:0, price: 12, icon:{ type:"emoji", href:"🫐" } },
+   { id:"corn", name:"Corn", type:"crop", quantity:0, price: 6, icon:{ type:"emoji", href:"🌽" } },
+   { id:"potato", name:"Potato", type:"crop", quantity:0, price: 3, icon:{ type:"emoji", href:"🥔" } },
+   { id:"blueberry", name:"Blueberry", type:"crop", quantity:0, price: 9, icon:{ type:"emoji", href:"🫐" } },
+   { id:"egg", name:"Egg", type:"egg", quantity:0, price: EGG_PRICE, icon:{ type:"img", href: ASSETS.egg } },
+ ],
   selectedSeedId: "corn-seed",
 
   showShop: false,
@@ -259,6 +264,19 @@ export const useGame = create<GameState>((set, get) => ({
 
   /* selectors */
   nearestId() { return nearestPlotId(get().player, get().plots); },
+  isNearHen() {
+    const { player, decorations } = get();
+    if (!decorations.includes('hen')) return false;
+
+    const playerCenter = { x: player.x + player.w / 2, y: player.y + player.h / 2 };
+    // Fixed hen position: left: 714, top: 220, width: 70, height: 70
+    const henCenter = { x: 930, y: 350 };
+    const distance = Math.hypot(playerCenter.x - henCenter.x, playerCenter.y - henCenter.y);
+
+    const hasValidSeed = get().selectedSeedId === 'corn-seed' || get().selectedSeedId === 'blueberry-seed';
+    return distance <= INTERACT_RADIUS && hasValidSeed &&
+            get().inventory.some(i => i.id === get().selectedSeedId && i.type === 'seed' && i.quantity >= 1);
+  },
   
   /* movimiento y facing (para cambiar sprite izquierda/derecha) */
   move(dx,dy,dt){
@@ -338,7 +356,6 @@ export const useGame = create<GameState>((set, get) => ({
 
     // si está vacío, siembra usando semilla seleccionada e inventario
     if (target.stage === 0) {
-      if (!target.isIrrigated) return;
       const selId = get().selectedSeedId;
       if (!selId) return;
 
@@ -346,7 +363,7 @@ export const useGame = create<GameState>((set, get) => ({
       const seedItem = inv.find(i => i.id===selId && (i.type==="seed" || (i.type==="crop" && i.id==="potato")));
       if (!seedItem || seedItem.quantity <= 0) return;
 
-      seedItem.quantity -= 1;
+      seedItem.quantity -= 1; // Seeds now cost 1 unit per planting (but will plant 2 seeds per action)
       const cleaned = inv.filter(i => !(i.type==="seed" && i.quantity<=0));
 
       set(s => ({
@@ -390,14 +407,26 @@ export const useGame = create<GameState>((set, get) => ({
       else crop = inv.find(i => i.type === "crop" && i.id === p.seed!.id);
     }
 
-    const harvestQuantity = produceName === 'Potato' ? 3 : 1; // Potatoes give more
+    const harvestQuantity = produceName === 'Potato' ? 6 : produceName === 'Corn' ? 4 : produceName === 'Blueberry' ? 6 : 1; // More realistic yields
 
     if (crop) {
       crop.quantity += harvestQuantity;
     } else {
       // create a slug id from the produce name
       const idSlug = produceName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || p.seed.id;
-      inv.push({ id: idSlug, name: produceName, type:"crop", quantity: harvestQuantity, price: produceName === 'Corn' ? 12 : produceName === 'Potato' ? 4 : 18, icon: p.seed.icon });
+      inv.push({ id: idSlug, name: produceName, type:"crop", quantity: harvestQuantity, price: produceName === 'Corn' ? 6 : produceName === 'Potato' ? 3 : 9, icon: p.seed.icon });
+    }
+
+    // Return 2 seeds back to inventory after harvest (only for corn and blueberries, not potatoes)
+    const seedId = p.seed!.id;
+    const harvestedSeedName = p.seed!.name;
+    if (harvestedSeedName !== 'Potato') {
+      let seedItem = inv.find(i => i.id === seedId && i.type === "seed");
+      if (seedItem) {
+        seedItem.quantity += 2;
+      } else {
+        inv.push({ id: seedId, name: harvestedSeedName, type: "seed", quantity: 2, price: harvestedSeedName === 'Corn Seed' ? 8 : harvestedSeedName === 'Blueberry Seed' ? 12 : 0, icon: p.seed!.icon });
+      }
     }
 
     set(s => ({
@@ -412,6 +441,51 @@ export const useGame = create<GameState>((set, get) => ({
     }
   },
 
+  feedHen(){
+    const { resources, decorations, inventory, selectedSeedId } = get();
+    if (resources.actionsRemaining <= 0) return;
+
+    // Check if hen is placed
+    const hasHen = decorations.includes('hen');
+    if (!hasHen) return;
+
+    // Only allow corn and blueberry seeds (not potato)
+    if (!selectedSeedId || (selectedSeedId !== 'corn-seed' && selectedSeedId !== 'blueberry-seed')) return;
+
+    // Check if player has enough of the selected seed (now costs 1)
+    const seedItem = inventory.find(i => i.id === selectedSeedId && i.type === 'seed' && i.quantity >= 1);
+    if (!seedItem) return;
+
+    const inv = structuredClone(inventory) as Inventory;
+    const seedToUse = inv.find(i => i.id === selectedSeedId && i.type === 'seed');
+    if (seedToUse) {
+      seedToUse.quantity -= 1;
+      if (seedToUse.quantity <= 0) {
+        const filtered = inv.filter(i => !(i.id === selectedSeedId && i.type === 'seed'));
+        set({ inventory: filtered });
+      } else {
+        set({ inventory: inv });
+      }
+
+      // Add 2 eggs to inventory per seed fed
+      const eggItem = inv.find(i => i.id === 'egg' && i.type === 'egg');
+      if (eggItem) {
+        eggItem.quantity += 2;
+      } else {
+        inv.push({ id: 'egg', name: 'Egg', type: 'egg', quantity: 2, price: EGG_PRICE, icon: { type: 'img', href: ASSETS.egg } });
+      }
+
+      set(s => ({
+        inventory: inv,
+        resources: { ...s.resources, actionsRemaining: s.resources.actionsRemaining - 1 }
+      }));
+
+      if (get().resources.actionsRemaining === 0) {
+        get().nextTurn();
+      }
+    }
+  },
+
   irrigate() {
     console.log('IRRRIGATE CALLED');
     const { isNearRiver, setRiverTutorialCompleted, player, plots, resources, setWaterTanks, updatePlot, forecast } = get();
@@ -422,7 +496,7 @@ export const useGame = create<GameState>((set, get) => ({
     const riverDist = dist(playerCenter.x, playerCenter.y, RIVER_POSITION.x, RIVER_POSITION.y);
 
     // Check if near river and fill tank, but not when river is dry
-    if (riverDist <= 162 && forecast.label !== "seca") {
+    if (riverDist <= 200 && forecast.label !== "seca") {
       const fillIndex = resources.waterTanks.findIndex(t => t < MAX_TANK_CAPACITY);
       if (fillIndex !== -1) {
         setWaterTanks(prev => {
@@ -439,19 +513,19 @@ export const useGame = create<GameState>((set, get) => ({
     }
 
     // Check for nearest irrigable plot
-    let nearestPlot: Plot | null = null;
-    let minDist = Infinity;
-    for (const p of plots) {
-      console.log('PLOT', p)
-      if (p.isIrrigated) continue;
-      const plotCenter = { x: p.x + 36, y: p.y + 36 };
-      const d = dist(playerCenter.x, playerCenter.y, plotCenter.x, plotCenter.y);
-      console.log('DIST', d)
-      if (d <= INTERACT_RADIUS && d < minDist) {
-        minDist = d;
-        nearestPlot = p;
-      }
-    }
+     let nearestPlot: Plot | null = null;
+     let minDist = Infinity;
+     for (const p of plots) {
+       console.log('PLOT', p)
+       if (p.hydrated) continue;
+       const plotCenter = { x: p.x + 36, y: p.y + 36 };
+       const d = dist(playerCenter.x, playerCenter.y, plotCenter.x, plotCenter.y);
+       console.log('DIST', d)
+       if (d <= INTERACT_RADIUS && d < minDist) {
+         minDist = d;
+         nearestPlot = p;
+       }
+     }
     console.log('NEAREST PLOT', nearestPlot);
 
     if (nearestPlot) {
@@ -466,7 +540,7 @@ export const useGame = create<GameState>((set, get) => ({
         });
         updatePlot(nearestPlot.id, {
           moisture: clamp01(nearestPlot.moisture + MOISTURE_IRRIGATION_DELTA),
-          isIrrigated: true
+          hydrated: true
         });
         set(state => ({ resources: { ...state.resources, actionsRemaining: state.resources.actionsRemaining - 1 } }));
         if (get().resources.actionsRemaining === 0) {
@@ -482,7 +556,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   
   nextTurn: ()=>{
-    const { grid, res, weather, drought, plots, forecast, resources } = get();
+    const { grid, res, weather, drought, plots, resources } = get();
     // recarga acuífero si llueve
     const aquiferGain = weather.rainMm > 3 ? 2 : weather.rainMm>0 ? 1 : 0;
     const newAquifer = Math.min(100, res.aquifer + aquiferGain);
@@ -508,8 +582,8 @@ export const useGame = create<GameState>((set, get) => ({
     });
 
     // Apply growth to plots
-    const newForecast = rollForecast();
-    const nextPlots = plots.map(p => stepGrowth(p, newForecast));
+     const newForecast = rollForecast();
+     const nextPlots = plots.map(p => stepGrowth(p, newForecast));
 
     // nueva predicción y sequía aleatoria
     const nw = nextForecast();
@@ -581,6 +655,6 @@ export const useGame = create<GameState>((set, get) => ({
     selectedRegion: "",
     selectedDistrict: "",
     playerName: "",
-    resources: { waterTanks: [0], currency: 20, turn: 1, actionsRemaining: ACTIONS_PER_MONTH }
+    resources: { waterTanks: [0], currency: 50, turn: 1, actionsRemaining: ACTIONS_PER_MONTH }
   })
 }));

@@ -1,7 +1,7 @@
 export interface Item {
   id: string;
   name: string;
-  type: 'seed' | 'crop' | 'plot' | 'tank' | 'decorative';
+  type: 'seed' | 'crop' | 'plot' | 'tank' | 'decorative' | 'egg';
   price: number;
   icon: {
     type: 'url' | 'emoji',
@@ -20,7 +20,7 @@ export type SeedIcon =
   | { type: "img"; href: string };
 
 export type InventoryItem =
-  { id: string; name: string; type: string; quantity: number; price: number; icon: SeedIcon }
+   { id: string; name: string; type: 'seed' | 'crop' | 'egg'; quantity: number; price: number; icon: SeedIcon }
 
 export type Inventory = InventoryItem[];
 
@@ -31,13 +31,15 @@ export type SeedRef = {
 };
 
 export type Plot = {
-  id: string;
-  x: number; y: number;
-  stage: Stage;
-  moisture: number;   // 0..1
-  alive: boolean;
-  isIrrigated: boolean;
-  seed: SeedRef | null;  // en tu código original podía ser null
+   id: string;
+   x: number; y: number;
+   stage: Stage;
+   moisture: number;   // 0..1
+   alive: boolean;
+   hydrated: boolean;  // si ha sido regada este mes
+   lastMonthWet: boolean;  // si el mes anterior fue moderado o fuerte
+   lastMonthManual: boolean;  // si el mes anterior fue hidratado manualmente
+   seed: SeedRef | null;  // en tu código original podía ser null
 };
 
 export type Forecast = {

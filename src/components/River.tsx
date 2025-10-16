@@ -7,7 +7,7 @@ const RIVER_Y = 0; // bottom
 const RIVER_WIDTH = 390;
 const RIVER_HEIGHT = 650;
 const RIVER_CENTER_X = RIVER_X + RIVER_WIDTH / 2;
-const RIVER_CENTER_Y = 450; // scene height 630
+const RIVER_CENTER_Y = 350; // scene height 630
 
 const River = ({ forecast, player, setIsNearRiver }: any) => {
   
@@ -20,7 +20,7 @@ const River = ({ forecast, player, setIsNearRiver }: any) => {
   const isNearRiverMemo = useMemo(() => {
     const playerCenterX = player.x + player.w / 2;
     const playerCenterY = player.y + player.h / 2;
-    const isNear = (Math.hypot(playerCenterX - RIVER_CENTER_X, playerCenterY - RIVER_CENTER_Y) < 200);
+    const isNear = (Math.hypot(playerCenterX - RIVER_CENTER_X, playerCenterY - RIVER_CENTER_Y) < 250);
     setIsNearRiver(isNear)
     return isNear
   }, [player]);

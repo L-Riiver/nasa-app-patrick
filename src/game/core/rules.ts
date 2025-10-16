@@ -1,5 +1,5 @@
 import type { Forecast, Plot, Stage } from "./types";
-import { EVAP_PER_TURN, MOISTURE_OK, RAIN_TO_MOISTURE } from "./constants";
+import { EVAP_PER_TURN, RAIN_TO_MOISTURE } from "./constants";
 
 const clampStage = (n: number): Stage =>
   (n < 0 ? 0 : n > 5 ? 5 : Math.floor(n)) as Stage;
@@ -18,20 +18,40 @@ export function rollForecast(): Forecast {
 }
 
 export function stepGrowth(p: Plot, fc: Forecast): Plot {
-   if (!p.alive) return p;
+    if (!p.alive) return p;
 
-   const rainMoisture = fc.mm * RAIN_TO_MOISTURE;
-   const moisture = clamp01(p.moisture + rainMoisture - EVAP_PER_TURN);
+    console.log(`stepGrowth for plot ${p.id}: stage=${p.stage}, hydrated=${p.hydrated}, lastMonthWet=${p.lastMonthWet}`);
 
-   let stage = p.stage;
+    // Si llueve moderada o fuerte este mes, automáticamente riega todas las parcelas este mes
+    const currentMonthWet = fc.label === "moderada" || fc.label === "fuerte";
+    const isRainyWeather = currentMonthWet; // New variable for readability
+    const rainMoisture = fc.mm * RAIN_TO_MOISTURE;
 
-   if (stage > 0 && stage < 5 && moisture >= MOISTURE_OK.min) {
-     stage = incStage(stage);
-   }
+    // La humedad se mantiene si el mes anterior fue húmedo, sino evapora
+    const evaporation = p.lastMonthWet ? 0 : EVAP_PER_TURN;
+    const moisture = clamp01(p.moisture + rainMoisture - evaporation);
 
-   const alive = !(moisture <= 0.05 && stage > 0);
-   return { ...p, stage, moisture, alive };
- }
+    let stage = p.stage;
+
+    // El crecimiento ocurre solo si el plot fue hidratado manualmente este mes
+    if (stage > 0 && stage < 5 && p.hydrated) {
+      console.log(`Growing plot ${p.id} from stage ${stage} to ${stage + 1}`);
+      stage = incStage(stage);
+    }
+
+    const alive = !(moisture <= 0.05 && stage > 0);
+    const thisMonthHydrated = p.hydrated || currentMonthWet;
+    const result = {
+      ...p,
+      stage,
+      moisture,
+      alive,
+      hydrated: isRainyWeather ? true : false, // Hydrate all plots when it's Modest or Heavy weather
+      lastMonthWet: thisMonthHydrated
+    };
+    console.log(`stepGrowth result for plot ${p.id}: newStage=${result.stage}`);
+    return result;
+}
 
 export function ndviProxy(plots: Plot[]): number {
   const planted = plots.filter(p => p.stage > 0 && p.alive);

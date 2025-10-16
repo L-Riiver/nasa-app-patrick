@@ -10,13 +10,15 @@ export const usePlayerMovement = () => {
     // showShop,
     plant,
     irrigate,
+    feedHen,
     nextTurn,
     toggleShop,
     cycleSeed,
     tutorialShown,
     setTutorialShown,
     // showControls,
-    toggleControls
+    toggleControls,
+    isNearHen
   } = useGame();
 
   const [isMoving, setIsMoving] = useState(false);
@@ -29,7 +31,7 @@ export const usePlayerMovement = () => {
     // attach once; handlers will read latest state via refs
     const down = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
-      if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d", "e", "r", "n", "i", "escape", "tab"].includes(k)) {
+      if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d", "e", "r", "q", "n", "i", "escape", "tab"].includes(k)) {
         e.preventDefault();
       }
       keys.current[k] = true;
@@ -39,7 +41,15 @@ export const usePlayerMovement = () => {
       }
 
       switch (k) {
-        case "e": plant(); break;
+        case "e": {
+          // Check if near hen first, then feed, otherwise plant
+          if (isNearHen()) {
+            feedHen();
+          } else {
+            plant();
+          }
+          break;
+        }
         case "r": irrigate(); break;
         case "n": nextTurn(); break;
         case "escape": toggleShop(); break;

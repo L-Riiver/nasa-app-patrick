@@ -43,7 +43,9 @@ export function makePlots(numPlots: number): Plot[] {
         stage: 0,
         moisture: 0.25,
         alive: true,
-        isIrrigated: false,
+        hydrated: false,
+        lastMonthWet: false,
+        lastMonthManual: false,
         seed: null,
       });
       idx++;
@@ -70,7 +72,7 @@ export function stepGrowth(p: Plot, fc: { mm: number; label: string }): Plot {
   let alive: boolean = p.alive;
   if (moisture <= 0.05 && stage > 0) alive = false;
 
-  return { ...p, stage: stage as Plot['stage'], moisture, alive, isIrrigated: false };
+  return { ...p, stage: stage as Plot['stage'], moisture, alive };
 }
 
 export function rollForecast() {

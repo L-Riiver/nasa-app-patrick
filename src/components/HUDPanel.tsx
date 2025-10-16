@@ -6,7 +6,7 @@ import TurnCounter from './HUD/TurnCounter';
 import ActionBar from './HUD/ActionBar';
 
 export const HUDPanel: React.FC<HUDPanelProps> = ({ showControls, setShowControls }) => {
-  const { seeds, crops, selectedSeedId, selectSeed } = useInventory();
+  const { seeds, crops, eggs, selectedSeedId, selectSeed } = useInventory();
   const { resources, toggleShop, nextTurn } = useGame();
 
   const handleSeedSelect = (seed: InventoryItem) => {
@@ -40,6 +40,14 @@ export const HUDPanel: React.FC<HUDPanelProps> = ({ showControls, setShowControl
         {crops.map(item => (
           <div key={item.id} className="inventory-item">
             {item.icon.href} {item.name}: {item.quantity}
+          </div>
+        ))}
+      </div>
+      <div className="hud-section">
+        <h4>Eggs</h4>
+        {eggs.map(item => (
+          <div key={item.id} className="inventory-item">
+            {item.icon.type === 'img' ? <img src={item.icon.href} alt={item.name} width="20" height="20" /> : item.icon.href} {item.name}: {item.quantity}
           </div>
         ))}
       </div>

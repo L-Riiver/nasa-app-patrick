@@ -75,7 +75,6 @@
   padding: 14px;
   border-radius: 10px;
   box-shadow: 0 6px 0 var(--shadow);
-  max-height: 400px;
   z-index: 50;
 }
 .hud-section {
@@ -353,8 +352,6 @@
   width: 410px;
   height: 140px;
   border-top: none;
-  /* borde solo para dimensionar */
-  border: 1px solid black;
   display: flex;
   align-items: end;
   gap: 5px;
@@ -457,8 +454,12 @@
 
 /* Árboles */
 .decorative{
-  position:absolute; left: 550px; top: 220px;
-  display:grid; grid-template-columns: repeat(3, 82px); gap:16px;
+  position: absolute;
+  right: 100px;
+  top: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 .tree{
   width:74px; height:90px; position:relative;
@@ -703,5 +704,154 @@
 
 .action-dot.inactive {
   background: var(--earth);
+}
+
+/* Rain overlay */
+.rain-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  z-index: 1000; /* High z-index to overlay on top of everything */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rain-gif {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7; /* Semi-transparent so content beneath is still visible */
+}
+
+/* Feed prompt */
+.feed-prompt {
+  position: absolute;
+  top: 270px;
+  right: -50px;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* Month animation overlay */
+.month-animation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgb(0, 0, 0);
+  mask-image: url("../assets/icons/month.svg"), linear-gradient(black, black);
+  mask-composite: exclude;
+  mask-position: center, center;
+  mask-repeat: no-repeat, no-repeat;
+  animation: month-animation 1.5s ease-in ;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+@keyframes month-animation {
+  0% {
+    mask-size: 50px auto, 100% 100%;
+  }
+  100% {
+    mask-size: 5000px auto, 100% 100%;
+  }
+}
+
+/* Pug Congratulations Modal */
+.pug-congrats-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.pug-congrats-content {
+  background: var(--panel);
+  border: 4px solid var(--panel2);
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  color: var(--text);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  animation: slideIn 0.6s ease-out;
+  max-width: 400px;
+  width: 90%;
+}
+
+.pug-congrats-content h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+  color: var(--grass);
+  text-shadow: 2px 2px 4px var(--shadow);
+}
+
+.pug-congrats-content p {
+  font-size: 24px;
+  margin-bottom: 30px;
+  font-weight: bold;
+}
+
+.pug-congrats-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.pug-congrats-buttons button {
+  background: var(--grass);
+  border: 2px solid var(--grass2);
+  color: var(--text);
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 0 var(--shadow);
+}
+
+.pug-congrats-buttons button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--shadow);
+  filter: brightness(1.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 

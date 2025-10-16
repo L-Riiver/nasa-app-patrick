@@ -2,7 +2,7 @@
 import type { Inventory, Item } from '../game/core/types';
 import { useGame } from '../game/state/store';
 import ASSETS from '../assets/gameAssets';
-import { PLOT_COSTS } from '../game/core/constants';
+import { PLOT_COSTS, HEN_PRICE } from '../game/core/constants';
 
 interface ShopProps {
   currency: number;
@@ -21,10 +21,12 @@ interface ShopProps {
   onClose: () => void;
   onSeedBought?: () => void;
   seedTutorialCompleted: boolean;
+  onPugPurchased?: (months: number) => void;
 }
 
-export default function Shop({ currency, setCurrency, inventory, setInventory, numPlots, setNumPlots, waterTanks, setWaterTanks, plots, setPlots, decorations, setDecorations, show, onClose, onSeedBought, seedTutorialCompleted }: ShopProps) {
+export default function Shop({ currency, setCurrency, inventory, setInventory, numPlots, setNumPlots, waterTanks, setWaterTanks, plots, setPlots, decorations, setDecorations, show, onClose, onSeedBought, seedTutorialCompleted, onPugPurchased }: ShopProps) {
   const selectedDistrict = useGame(state => state.selectedDistrict);
+  const currentTurn = useGame(state => state.resources.turn);
 
   const getPlotPrice = (currentPlots: number): number => {
     if (currentPlots >= 9) return 0;
@@ -58,7 +60,7 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
       id: 'corn-seed',
       name: 'Corn Seed',
       type: 'seed',
-      price: 3,
+      price: 8,
       icon: {
         type: 'emoji',
         href: '🌽'
@@ -68,7 +70,7 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
       id: 'potato',
       name: 'Potato',
       type: 'crop',
-      price: 4,
+      price: 5,
       icon: {
         type: 'emoji',
         href: '🥔'
@@ -78,7 +80,7 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
       id: 'blueberry-seed',
       name: 'Blueberry Seed',
       type: 'seed',
-      price: 5,
+      price: 12,
       icon: {
         type: 'emoji',
         href: '🫐'
@@ -98,7 +100,7 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
       id: 'tank',
       name: 'Water Tank',
       type: 'tank',
-      price: 30,
+      price: 25,
       icon: {
         type: 'emoji',
         href: '🪣'
@@ -125,10 +127,20 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
     //   }
     // },
     {
+      id: 'hen',
+      name: 'Hen',
+      type: 'decorative',
+      price: HEN_PRICE,
+      icon: {
+        type: 'url',
+        href: ASSETS.hen
+      }
+    },
+    {
       id: 'pet',
       name: 'Pet',
       type: 'decorative',
-      price: 500,
+      price: 250,
       icon: {
         type: 'url',
         href: ASSETS.pet
@@ -159,7 +171,6 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
         stage: 0,
         moisture: 0.25,
         alive: true,
-        isIrrigated: false,
         seed: null,
       };
       setNumPlots(numPlots + 1);
@@ -175,6 +186,10 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
     if (item.type === 'decorative') {
       if (!decorations.includes(item.id)) {
         setDecorations([...decorations, item.id]);
+        if (item.id === 'pet') {
+          onPugPurchased?.(currentTurn);
+          onClose(); // Close the shop after purchasing
+        }
       }
       return;
     }
@@ -204,23 +219,23 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
   };
 
   const sellItem = (itemId: string) => {
-    const item = inventory.find(i => i.id === itemId && i.type === 'crop');
+    const item = inventory.find(i => i.id === itemId && (i.type === 'crop' || i.type === 'egg'));
     if (!item || item.quantity <= 0) return;
 
     setCurrency(currency + item.price);
 
     if (item.quantity === 1) {
-      setInventory(inventory.filter(i => !(i.id === itemId && i.type === 'crop')) as Inventory);
+      setInventory(inventory.filter(i => !(i.id === itemId && (i.type === 'crop' || i.type === 'egg'))) as Inventory);
     } else {
-      setInventory(inventory.map(i => (i.id === itemId && i.type === 'crop' ? { ...i, quantity: i.quantity - 1 } : i)) as Inventory);
+      setInventory(inventory.map(i => (i.id === itemId && (i.type === 'crop' || i.type === 'egg') ? { ...i, quantity: i.quantity - 1 } : i)) as Inventory);
     }
   };
 
   const sellAll = () => {
-    const cropsToSell = inventory.filter(i => i.type === 'crop' && i.quantity > 0);
-    const totalEarnings = cropsToSell.reduce((sum, item) => sum + item.quantity * item.price, 0);
+    const itemsToSell = inventory.filter(i => (i.type === 'crop' || i.type === 'egg') && i.quantity > 0);
+    const totalEarnings = itemsToSell.reduce((sum, item) => sum + item.quantity * item.price, 0);
     setCurrency(currency + totalEarnings);
-    setInventory(inventory.filter(i => !(i.type === 'crop' && i.quantity > 0)) as Inventory);
+    setInventory(inventory.filter(i => !((i.type === 'crop' || i.type === 'egg') && i.quantity > 0)) as Inventory);
   };
 
   return (
@@ -259,14 +274,14 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
           })}
         </div>
         <div className='shop-sell'>
-          <h4>Sell</h4>
-          <button onClick={sellAll} disabled={inventory.filter(i => i.type === 'crop' && i.quantity > 0).length === 0}>Sell All</button>
-          {inventory.filter(i => i.type === 'crop' && i.quantity > 0).map(item => (
-            <div className='shop-item' key={item.id}>
-              {item.icon.href} {item.name}: {item.quantity} - {item.price}🪙 each <button onClick={() => sellItem(item.id)}>Sell</button>
-            </div>
-          ))}
-        </div>
+           <h4>Sell</h4>
+           <button onClick={sellAll} disabled={inventory.filter(i => (i.type === 'crop' || i.type === 'egg') && i.quantity > 0).length === 0}>Sell All</button>
+           {inventory.filter(i => (i.type === 'crop' || i.type === 'egg') && i.quantity > 0).map(item => (
+             <div className='shop-item' key={item.id}>
+               {item.icon.type === 'img' ? <img src={item.icon.href} alt={item.name} width="20" height="20" /> : item.icon.href} {item.name}: {item.quantity} - {item.price}🪙 each <button onClick={() => sellItem(item.id)}>Sell</button>
+             </div>
+           ))}
+         </div>
         {!seedTutorialCompleted && <div className="seed-tutorial">Buy your seed.</div>}
       </div>
     </div>
