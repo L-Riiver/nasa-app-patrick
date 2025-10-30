@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGame } from "../game/state/store";
 
 const ClimatePanel: React.FC<ClimatePanelProps> = ({ currentTurn, currentForecast, onExpand, isWeatherTutorialActive, selectedDistrict }) => {
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [forecasts, setForecasts] = useState<Forecast[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
@@ -81,10 +83,10 @@ const ClimatePanel: React.FC<ClimatePanelProps> = ({ currentTurn, currentForecas
 
   const getWeatherDescription = (label: string) => {
     switch (label) {
-      case 'seca': return 'Dry';
-      case 'ligera': return 'Light';
-      case 'moderada': return 'Modest';
-      case 'fuerte': return 'Heavy';
+      case 'seca': return t('game.weather.dry');
+      case 'ligera': return t('game.weather.light');
+      case 'moderada': return t('game.weather.modest');
+      case 'fuerte': return t('game.weather.heavy');
       default: return '';
     }
   };
@@ -103,16 +105,16 @@ const ClimatePanel: React.FC<ClimatePanelProps> = ({ currentTurn, currentForecas
               <div className="status-icons">🛜 📶 🔋</div>
             </div>
             <div className="phone-screen">
-              {selectedDistrict && <div className="district-info">District: {selectedDistrict}</div>}
+              {selectedDistrict && <div className="district-info">{t('game.weather.district')}: {selectedDistrict}</div>}
               <div className="forecast-list">
                 {forecasts.map((forecast, index) => (
                   <div key={index} className="forecast-item">
-                    <div className="forecast-month">Month {currentTurn + index + 1}</div>
+                    <div className="forecast-month">{t('game.hud.month')} {currentTurn + index + 1}</div>
                     <div className='forecast-rain'>
                       <div className="forecast-climate"><span>{getWeatherIcon(forecast.label)}</span><span> {getWeatherDescription(forecast.label)}</span></div>
                       <div className="forecast-rainfall">{forecast.mm.toFixed(1)} mm</div>
                     </div>
-                    <div className="forecast-extra">{forecast.temperature}°C | {forecast.humidity}% Humidity</div>
+                    <div className="forecast-extra">{forecast.temperature}°C | {forecast.humidity}% {t('game.weather.humidity')}</div>
                   </div>
                 ))}
               </div>

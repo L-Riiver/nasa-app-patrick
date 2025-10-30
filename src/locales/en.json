@@ -1,0 +1,126 @@
+{
+  "home": {
+    "farm_name": "Farm Name",
+    "start": "START"
+  },
+  "game": {
+    "title": "F4F Game",
+    "missions": {
+      "title": "Missions!",
+      "objective": "Your objective is to maintain sustainable farming practices using NASA data.",
+      "controls": "📌Use WASD or arrow keys (↑ → ↓ ←) to move around the map.",
+      "water_management": "Manage your water resources wisely to keep your crops healthy.",
+      "shop": "Visit the shop to buy seeds, tools, and upgrades.",
+      "end_turn": "End your turn to advance to the next month and see the effects of climate data.",
+      "river_water": "The water you collect will be shown in the tank below. 📌Go to the RIVER and press R to collect water.",
+      "open_shop": "Water collected will be shown in the bottom tank. 📌Press ESC to open the shop.",
+      "close_shop": "📌Close the shop with ESC.",
+      "plant_crop": "Crops will grow when you change months. 📌Go to the plot, press R to water, press E to plant.",
+      "open_phone": "Crops will grow when changing months. 📌Click on the phone.",
+      "phone_weather": "With the cell phone you can see the weather in the following months.",
+      "buy_plot": "📌Buy an additional plot",
+      "buy_hen": "📌Buy a hen",
+      "buy_pet": "📌Buy a pet (end game)",
+      "feed_prompt": "Press E to feed",
+      "skip_tutorial": "CLOSE"
+    },
+    "hud": {
+      "month": "Month",
+      "water": "Water",
+      "ndvi": "NDVI",
+      "inventory": "Inventory",
+      "shop": "Shop",
+      "time": "Time",
+      "actions_left": "Actions Left",
+      "seeds_select": "Seeds (Select One)",
+      "crops": "Crops",
+      "eggs": "Eggs",
+      "controls": "Controls"
+    },
+    "controls": {
+      "sow_harvest": "Sow / Harvest",
+      "irrigate": "Irrigate",
+      "next_turn": "Next Turn / Turno",
+      "cycle_seeds": "Cycle Seeds",
+      "open_shop": "Shop"
+    },
+    "shop": {
+      "title": "Shop",
+      "seeds": "Seeds",
+      "tools": "Tools",
+      "upgrades": "Upgrades",
+      "corn_seed": "Corn Seed",
+      "potato_seed": "Potato Seed",
+      "blueberry_seed": "Blueberry Seed",
+      "watering_can": "Watering Can",
+      "fertilizer": "Fertilizer",
+      "greenhouse": "Greenhouse",
+      "buy": "Buy",
+      "sell": "Sell",
+      "buy_seed_tutorial": "Buy your seed.",
+      "sell_all": "Sell All",
+      "each": "each",
+      "item_descriptions": {
+        "corn_seed": "Plant corn seeds to grow corn crops. Each seed costs 8 coins.",
+        "potato_seed": "Potato seeds for growing potatoes. Buy for 5 coins.",
+        "blueberry_seed": "Blueberry seeds for blueberry crops. Price: 12 coins.",
+        "plot": "Purchase additional land plots to expand your farm. Price varies by plots owned.",
+        "water_tank": "Buy water tanks to store water for irrigation. Each tank costs 25 coins.",
+        "hen": "Purchase a hen that lays eggs. One-time cost of 50 coins.",
+        "pet": "Buy a pet pug for your farm. Special achievement item costing 250 coins.",
+        "corn": "Harvest and sell corn crops. Each corn sells for 8 coins.",
+        "potato": "Sell harvested potatoes. Each potato sells for 5 coins.",
+        "blueberry": "Sell blueberry crops. Each blueberry sells for 12 coins.",
+        "egg": "Sell eggs produced by your hen. Each egg sells for 3 coins."
+      }
+    },
+    "plots": {
+      "soil_moisture": "Soil Moisture",
+      "plant": "Plant",
+      "harvest": "Harvest",
+      "water": "Water"
+    },
+    "inventory": {
+      "title": "Inventory",
+      "corn": "Corn",
+      "potato": "Potato",
+      "blueberry": "Blueberry",
+      "egg": "Egg",
+      "seed": "Seed",
+      "seeds_select":"Select seed:",
+      "crops":"Crops",
+      "eggs":"Eggs"
+    },
+    "buttons": {
+      "play": "Play",
+      "tutorial": "Tutorial",
+      "exit": "Exit",
+      "end_turn": "End Turn",
+      "close": "Close",
+      "continue_playing": "Continue Playing"
+    },
+    "messages": {
+      "no_water": "Not enough water!",
+      "crop_ready": "Crop is ready to harvest!",
+      "seed_planted": "Seed planted!",
+      "insufficient_funds": "Insufficient funds!",
+      "congratulations": "Congratulations!",
+      "pug_achievement": "You got the Pug in {{months}} months!",
+      "exit_confirm": "Are you sure you want to exit? Your progress will be lost."
+    },
+    "weather": {
+      "dry": "Dry",
+      "light": "Light",
+      "modest": "Modest",
+      "heavy": "Heavy",
+      "humidity": "Humidity",
+      "district": "District"
+    },
+    "map": {
+      "select_region": "Select Region",
+      "select_district": "Select District in La Libertad - Perú",
+      "ica_coming_soon": "Ica (Coming Soon)",
+      "play_in": "Play in"
+    }
+  }
+}

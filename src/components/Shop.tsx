@@ -1,4 +1,5 @@
-/*  */import React from 'react';
+/*  */import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Inventory, Item } from '../game/core/types';
 import { useGame } from '../game/state/store';
 import ASSETS from '../assets/gameAssets';
@@ -25,8 +26,10 @@ interface ShopProps {
 }
 
 export default function Shop({ currency, setCurrency, inventory, setInventory, numPlots, setNumPlots, waterTanks, setWaterTanks, plots, setPlots, decorations, setDecorations, show, onClose, onSeedBought, seedTutorialCompleted, onPugPurchased }: ShopProps) {
+  const { t } = useTranslation();
   const selectedDistrict = useGame(state => state.selectedDistrict);
   const currentTurn = useGame(state => state.resources.turn);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const getPlotPrice = (currentPlots: number): number => {
     if (currentPlots >= 9) return 0;
@@ -34,18 +37,18 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
   };
 
   const districtModifiers: Record<string, Record<string, number>> = {
-    'Trujillo': { 'corn-seed': 2, 'potato': -1, 'blueberry-seed': 0 },
-    'Ascope': { 'corn-seed': 1, 'potato': 1, 'blueberry-seed': 1 },
-    'Pacasmayo': { 'corn-seed': 2, 'potato': -1, 'blueberry-seed': -1 },
-    'Chepen': { 'corn-seed': 2, 'potato': -1, 'blueberry-seed': 0 },
-    'Virú': { 'corn-seed': 1, 'potato': 1, 'blueberry-seed': 1 },
-    'Sánchez Carrión': { 'corn-seed': 0, 'potato': 2, 'blueberry-seed': 1 },
-    'Gran Chimú': { 'corn-seed': 1, 'potato': 0, 'blueberry-seed': 2 },
-    'Otuzco': { 'corn-seed': -1, 'potato': 2, 'blueberry-seed': 1 },
-    'Julcán': { 'corn-seed': -1, 'potato': 2, 'blueberry-seed': 0 },
-    'Santiago de Chuco': { 'corn-seed': -1, 'potato': 2, 'blueberry-seed': 1 },
-    'Bolívar': { 'corn-seed': 0, 'potato': 1, 'blueberry-seed': 2 },
-    'Pataz': { 'corn-seed': 0, 'potato': 1, 'blueberry-seed': 2 },
+    'Trujillo': { 'corn_seed': 2, 'potato_seed': -1, 'blueberry_seed': 0 },
+    'Ascope': { 'corn_seed': 1, 'potato_seed': 1, 'blueberry_seed': 1 },
+    'Pacasmayo': { 'corn_seed': 2, 'potato_seed': -1, 'blueberry_seed': -1 },
+    'Chepen': { 'corn_seed': 2, 'potato_seed': -1, 'blueberry_seed': 0 },
+    'Virú': { 'corn_seed': 1, 'potato_seed': 1, 'blueberry_seed': 1 },
+    'Sánchez Carrión': { 'corn_seed': 0, 'potato_seed': 2, 'blueberry_seed': 1 },
+    'Gran Chimú': { 'corn_seed': 1, 'potato_seed': 0, 'blueberry_seed': 2 },
+    'Otuzco': { 'corn_seed': -1, 'potato_seed': 2, 'blueberry_seed': 1 },
+    'Julcán': { 'corn_seed': -1, 'potato_seed': 2, 'blueberry_seed': 0 },
+    'Santiago de Chuco': { 'corn_seed': -1, 'potato_seed': 2, 'blueberry_seed': 1 },
+    'Bolívar': { 'corn_seed': 0, 'potato_seed': 1, 'blueberry_seed': 2 },
+    'Pataz': { 'corn_seed': 0, 'potato_seed': 1, 'blueberry_seed': 2 },
   };
 
   const getModifierText = (itemId: string) => {
@@ -57,8 +60,8 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
 
   const availableItems: Item[] = [
     {
-      id: 'corn-seed',
-      name: 'Corn Seed',
+      id: 'corn_seed',
+      name: t('game.shop.corn_seed'),
       type: 'seed',
       price: 8,
       icon: {
@@ -67,9 +70,9 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
       }
     },
     {
-      id: 'potato',
-      name: 'Potato',
-      type: 'crop',
+      id: 'potato_seed',
+      name: t('game.shop.potato_seed'),
+      type: 'seed',
       price: 5,
       icon: {
         type: 'emoji',
@@ -77,8 +80,8 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
       }
     },
     {
-      id: 'blueberry-seed',
-      name: 'Blueberry Seed',
+      id: 'blueberry_seed',
+      name: t('game.shop.blueberry_seed'),
       type: 'seed',
       price: 12,
       icon: {
@@ -88,7 +91,7 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
     },
     {
       id: 'plot',
-      name: 'Plot',
+      name: t('game.shop.plot'),
       type: 'plot',
       price: getPlotPrice(numPlots),
       icon: {
@@ -97,8 +100,8 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
       }
     },
     {
-      id: 'tank',
-      name: 'Water Tank',
+      id: 'water_tank',
+      name: t('game.shop.water_tank'),
       type: 'tank',
       price: 25,
       icon: {
@@ -128,7 +131,7 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
     // },
     {
       id: 'hen',
-      name: 'Hen',
+      name: t('game.shop.hen'),
       type: 'decorative',
       price: HEN_PRICE,
       icon: {
@@ -138,7 +141,7 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
     },
     {
       id: 'pet',
-      name: 'Pet',
+      name: t('game.shop.pet'),
       type: 'decorative',
       price: 250,
       icon: {
@@ -175,6 +178,9 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
       };
       setNumPlots(numPlots + 1);
       setPlots([...plots, newPlot]);
+
+      // Mark the buy plot tutorial as completed
+      useGame.getState().setBuyPlotTutorialCompleted(true);
       return;
     }
 
@@ -188,7 +194,10 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
         setDecorations([...decorations, item.id]);
         if (item.id === 'pet') {
           onPugPurchased?.(currentTurn);
+          useGame.getState().setBuyPetTutorialCompleted(true);
           onClose(); // Close the shop after purchasing
+        } else if (item.id === 'hen') {
+          useGame.getState().setBuyHenTutorialCompleted(true);
         }
       }
       return;
@@ -219,7 +228,7 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
   };
 
   const sellItem = (itemId: string) => {
-    const item = inventory.find(i => i.id === itemId && (i.type === 'crop' || i.type === 'egg'));
+    const item = inventory.find(i => i.id === itemId && ((i.type === 'crop' || i.type === 'egg') || (i.type === 'seed' && i.id === 'potato_seed')));
     if (!item || item.quantity <= 0) return;
 
     setCurrency(currency + item.price);
@@ -232,58 +241,134 @@ export default function Shop({ currency, setCurrency, inventory, setInventory, n
   };
 
   const sellAll = () => {
-    const itemsToSell = inventory.filter(i => (i.type === 'crop' || i.type === 'egg') && i.quantity > 0);
+    const itemsToSell = inventory.filter(i => ((i.type === 'crop' || i.type === 'egg') || (i.type === 'seed' && i.id === 'potato_seed')) && i.quantity > 0);
     const totalEarnings = itemsToSell.reduce((sum, item) => sum + item.quantity * item.price, 0);
     setCurrency(currency + totalEarnings);
-    setInventory(inventory.filter(i => !((i.type === 'crop' || i.type === 'egg') && i.quantity > 0)) as Inventory);
+    setInventory(inventory.filter(i => !(((i.type === 'crop' || i.type === 'egg') || (i.type === 'seed' && i.id === 'potato_seed')) && i.quantity > 0)) as Inventory);
+  };
+
+  const getItemDescription = (itemId: string) => {
+    return t(`game.shop.item_descriptions.${itemId}`);
   };
 
   return (
-    <div className={show ? "shop show" : "shop"}>
-      <div className='shop-header'>
-        <h3>Shop</h3>
-        <div>🪙: {currency}</div>
-        <button onClick={onClose}>Close</button>
-      </div>
-      <div className='shop-body'>
-        <div className='shop-buy'>
-          <h4>Buy</h4>
-          {availableItems.map(item => {
-            let disabled = currency < item.price;
-            let maxText = '';
-            if (item.type === 'plot') {
-              disabled = disabled || numPlots >= 9;
-              maxText = ` (${numPlots}/9)`;
-            } else if (item.type === 'tank') {
-              disabled = disabled || waterTanks.length >= 10;
-              maxText = ` (${waterTanks.length}/10)`;
-            } else if (item.type === 'decorative') {
-              disabled = disabled || decorations.includes(item.id);
-              maxText = decorations.includes(item.id) ? ' (Owned)' : '';
-            }
-            return (
-              <div className='shop-item' key={item.id} style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                <div>
-                  {item.icon.type === 'url' ? <img src={item.icon.href} alt={item.name} width="20" height="20" /> : item.icon.href} {item.name}{getModifierText(item.id)}{maxText}
-                </div>
-                <div>
-                  {item.price}🪙 <button onClick={() => buyItem(item)} disabled={disabled}>Buy</button>
-                </div>
-              </div>
-            );
-          })}
+    <>
+      <div className={show ? "shop show" : "shop"}>
+        <div className='shop-header'>
+          <h3>{t('game.shop.title')}</h3>
+          <div>🪙: {currency}</div>
+          <button onClick={onClose}>{t('game.buttons.close')}</button>
         </div>
-        <div className='shop-sell'>
-           <h4>Sell</h4>
-           <button onClick={sellAll} disabled={inventory.filter(i => (i.type === 'crop' || i.type === 'egg') && i.quantity > 0).length === 0}>Sell All</button>
-           {inventory.filter(i => (i.type === 'crop' || i.type === 'egg') && i.quantity > 0).map(item => (
-             <div className='shop-item' key={item.id}>
-               {item.icon.type === 'img' ? <img src={item.icon.href} alt={item.name} width="20" height="20" /> : item.icon.href} {item.name}: {item.quantity} - {item.price}🪙 each <button onClick={() => sellItem(item.id)}>Sell</button>
-             </div>
-           ))}
-         </div>
-        {!seedTutorialCompleted && <div className="seed-tutorial">Buy your seed.</div>}
+        <div className='shop-body'>
+          <div className='shop-buy'>
+            <h4>{t('game.shop.buy')}</h4>
+            <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px'}}>
+              {availableItems.map(item => {
+                let disabled = currency < item.price;
+                let maxText = '';
+                if (item.type === 'plot') {
+                  disabled = disabled || numPlots >= 9;
+                  maxText = ` (${numPlots}/9)`;
+                } else if (item.type === 'tank') {
+                  disabled = disabled || waterTanks.length >= 10;
+                  maxText = ` (${waterTanks.length}/10)`;
+                } else if (item.type === 'decorative') {
+                  disabled = disabled || decorations.includes(item.id);
+                  maxText = decorations.includes(item.id) ? t('game.shop.owned') : '';
+                }
+                return (
+                  <div
+                    className='shop-item-compact'
+                    key={item.id}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      padding: '8px',
+                      border: '1px solid var(--panel2)',
+                      borderRadius: '6px',
+                      minWidth: '120px',
+                      position: 'relative'
+                    }}
+                    onMouseEnter={() => setHoveredItem(item.id)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                  >
+                    <div style={{fontSize: '24px', marginBottom: '4px'}}>
+                      {item.icon.type === 'url' ? <img src={item.icon.href} alt={item.name} width="24" height="24" /> : item.icon.href}
+                    </div>
+                    <div style={{fontSize: '12px', textAlign: 'center', marginBottom: '4px'}}>
+                      {item.name}{getModifierText(item.id)}{maxText}
+                    </div>
+                    <div style={{fontSize: '14px', marginBottom: '4px'}}>
+                      {item.price}🪙
+                    </div>
+                    <button onClick={() => buyItem(item)} disabled={disabled} style={{fontSize: '12px', padding: '4px 8px'}}>
+                      {t('game.shop.buy')}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className='shop-sell'>
+             <h4>{t('game.shop.sell')}</h4>
+              <button onClick={sellAll} disabled={inventory.filter(i => ((i.type === 'crop' || i.type === 'egg') || (i.type === 'seed' && i.id === 'potato_seed')) && i.quantity > 0).length === 0}>
+                {t('game.shop.sell_all')} ({inventory.filter(i => ((i.type === 'crop' || i.type === 'egg') || (i.type === 'seed' && i.id === 'potato_seed')) && i.quantity > 0).reduce((sum, item) => sum + item.quantity * item.price, 0)}🪙)
+              </button>
+              <div style={{display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px'}}>
+                {inventory.filter(i => ((i.type === 'crop' || i.type === 'egg') || (i.type === 'seed' && i.id === 'potato_seed')) && i.quantity > 0).map(item => (
+                  <div
+                    className='shop-item-compact'
+                    key={item.id}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      padding: '8px',
+                      border: '1px solid var(--panel2)',
+                      borderRadius: '6px',
+                      minWidth: '120px',
+                      position: 'relative'
+                    }}
+                    onMouseEnter={() => setHoveredItem(item.id)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                  >
+                    <div style={{fontSize: '24px', marginBottom: '4px'}}>
+                      {item.icon.type === 'img' ? <img src={item.icon.href} alt={item.name} width="24" height="24" /> : item.icon.href}
+                    </div>
+                    <div style={{fontSize: '12px', textAlign: 'center', marginBottom: '4px'}}>
+                      {item.name}
+                    </div>
+                    <div style={{fontSize: '12px', marginBottom: '4px'}}>
+                      {item.quantity} × {item.price}🪙 = {item.quantity * item.price}🪙
+                    </div>
+                    <button onClick={() => sellItem(item.id)} style={{fontSize: '12px', padding: '4px 8px'}}>
+                      {t('game.shop.sell')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+           {!seedTutorialCompleted && <div className="seed-tutorial">{t('game.shop.buy_seed_tutorial')}</div>}
+        </div>
       </div>
-    </div>
+      {hoveredItem && (
+        <div className="shop-tooltip" style={{
+          position: 'absolute',
+          top: '50%',
+          right: '20px',
+          background: 'rgba(0, 0, 0, 0.9)',
+          color: 'white',
+          padding: '10px',
+          borderRadius: '5px',
+          maxWidth: '300px',
+          whiteSpace: 'pre-line',
+          zIndex: 3000,
+          pointerEvents: 'none'
+        }}>
+          {getItemDescription(hoveredItem)}
+        </div>
+      )}
+    </>
   );
 }

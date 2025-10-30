@@ -80,14 +80,18 @@ const ASSETS = {
   month: month, // f4f logo svg
 };
 
-export const getStageImage = (stage: number, seedId?: string | null): string => {
+export const getStageImage = (stage: number, seedId?: string | null, hydrated?: boolean): string => {
   if (stage === 0 || !seedId) {
+    if (hydrated) {
+      return ASSETS.stageIrrigate;
+    }
     return ASSETS.plotStages[stage] || ASSETS.plotStages[0];
   }
 
   // Map seedId to crop type
   let cropType: keyof typeof ASSETS.cropStages;
-  if (seedId === 'corn-seed') cropType = 'corn';
+  if (seedId === 'corn_seed') cropType = 'corn';
+  else if (seedId === 'potato_seed') cropType = 'potato';
   else if (seedId === 'potato') cropType = 'potato';
   else if (seedId === 'blueberry-seed') cropType = 'blueberry';
   else cropType = 'corn'; // fallback

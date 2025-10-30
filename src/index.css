@@ -4,14 +4,15 @@
   --text: #e5e7eb;      /* gray-200 */
   --accent: #22c55e;    /* green-500 */
   --warn: #f59e0b;      /* amber-500 */
+  --warn-2: #d6a73b;
   --bad: #ef4444;       /* red-500 */
   --good: #10b981;      /* emerald-500 */
   --tile: #1f2937;      /* gray-800 */
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0;}
 html, body, #root { height: 100%; }
-body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; background: radial-gradient(1000px 600px at 100% 0, #0b1223 0%, var(--bg) 45%); color: var(--text); }
+body { margin: 0; font-family: cursive; background: radial-gradient(1000px 600px at 100% 0, #0b1223 0%, var(--bg) 45%); color: var(--text); }
 
 .app { max-width: 1100px; margin: 24px auto; padding: 16px; }
 .hud { display:flex; gap:12px; align-items:center; flex-wrap: wrap; margin-bottom: 16px; }

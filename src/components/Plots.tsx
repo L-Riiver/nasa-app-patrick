@@ -14,7 +14,7 @@ export const Plots: React.FC<PlotsProps> = ({ plots, nearestId }) => {
           className={`plot ${(nearestId && p.id === nearestId) ? "focus" : ""} ${!p.alive ? "dead" : ""}`}
           style={{ left: p.x, top: p.y }}
         >
-          <img src={getStageImage(p.stage, p.seed?.id)} alt="" draggable={false} width={65} height={65} />
+          <img src={getStageImage(p.stage, p.seed?.id, p.hydrated)} alt="" draggable={false} width={65} height={65} />
           {p.hydrated && (
             <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', fontSize: '20px' }}>
               +💧

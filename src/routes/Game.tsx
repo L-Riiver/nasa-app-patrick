@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Shop from "../components/Shop";
 import ClimatePanel from "../components/ClimatePanel";
 import { HUDPanel } from "../components/HUDPanel";
@@ -8,6 +9,7 @@ import { Plots } from "../components/Plots";
 import { Tanks } from "../components/Tanks"
 import { Decorations } from "../components/Decorations";
 import River from "../components/River";
+import { MissionsChecklist } from "../components/MissionsChecklist";
 import { usePlayerMovement } from "../hooks/usePlayerMovement";
 import { useGameActions } from "../hooks/useGameActions";
 import { useGame } from "../game/state/store";
@@ -17,6 +19,7 @@ import ASSETS from "../assets/gameAssets";
 // const PLAYER = { w: 65, h: 105, speed: 250 };
 
 export default function Game() {
+  const { t } = useTranslation();
   const [showMonthAnimation, setShowMonthAnimation] = useState(false);
   const [showPugCongrats, setShowPugCongrats] = useState(false);
   const [pugMonths, setPugMonths] = useState(0);
@@ -50,12 +53,16 @@ export default function Game() {
     setShopTutorialCompleted,
     setCloseShopTutorialCompleted,
     setPlantTutorialCompleted,
+    buyPlotTutorialCompleted,
+    buyHenTutorialCompleted,
+    buyPetTutorialCompleted,
     nearestId,
     setPlots,
     setInventory,
     setWaterTanks,
     numPlots,
-    isNearHen } = useGame();
+    isNearHen,
+    playerName } = useGame();
 
   // const [frameFarmer, setFrameFarmer] = useState(ASSETS.farmerWalk)
   // const [facingRight, setFacingRight] = useState(false);
@@ -90,14 +97,43 @@ export default function Game() {
   const nav = useNavigate();
 
 
+  const tutorialSteps = [
+    { key: 'controls', completed: tutorialShown },
+    { key: 'river_water', completed: riverTutorialCompleted },
+    { key: 'open_shop', completed: shopTutorialCompleted },
+    { key: 'close_shop', completed: closeShopTutorialCompleted },
+    { key: 'plant_crop', completed: plantTutorialCompleted },
+    { key: 'open_phone', completed: weatherTutorialCompleted },
+    { key: 'phone_weather', completed: weatherTutorialCompleted },
+    { key: 'buy_plot', completed: buyPlotTutorialCompleted },
+    { key: 'buy_hen', completed: buyHenTutorialCompleted },
+    { key: 'buy_pet', completed: buyPetTutorialCompleted },
+  ];
+
+  const handleSkipTutorial = () => {
+    setTutorialShown(true);
+    setRiverTutorialCompleted(true);
+    setShopTutorialCompleted(true);
+    setSeedTutorialCompleted(true);
+    setCloseShopTutorialCompleted(true);
+    setPlantTutorialCompleted(true);
+    setWeatherTutorialCompleted(true);
+    setFinalTutorialCompleted(true);
+  };
+
   return (
     <>
       <div className="background">
-        <div className="title-banner">F4F - Month {resources.turn}</div>
-        <button className="exit-btn" onClick={() => { if (window.confirm("¿Estás seguro de que quieres salir? Perderás tu progreso.")) { nav("/"); } }}>Salir</button>
+        <div className="title-banner">{playerName || t('game.title')} - {t('game.hud.month')} {resources.turn}</div>
+        <button className="exit-btn" onClick={() => { if (window.confirm(t('game.buttons.exit') + "? " + t('messages.exit_confirm'))) { nav("/"); } }}>{t('game.buttons.exit')}</button>
       </div>
       <div className="scene">
         <HUDPanel showControls={showControls} setShowControls={toggleControls} />
+
+        {/* Missions Checklist */}
+        {!finalTutorialCompleted && (
+          <MissionsChecklist tutorialSteps={tutorialSteps} onSkip={handleSkipTutorial} />
+        )}
 
         <Shop
           currency={resources.currency}
@@ -128,7 +164,7 @@ export default function Game() {
 
         {isNearHen() && (
           <div className="feed-prompt">
-            Press E to feed
+            {t('game.missions.feed_prompt')}
           </div>
         )}
 
@@ -141,86 +177,6 @@ export default function Game() {
 
 
         
-      {!tutorialShown && (
-        <div className="tutorial-modal">
-          <button
-            className="skip-tutorial-btn"
-            onClick={() => {
-              setTutorialShown(true);
-              setRiverTutorialCompleted(true);
-              setShopTutorialCompleted(true);
-              setSeedTutorialCompleted(true);
-              setCloseShopTutorialCompleted(true);
-              setPlantTutorialCompleted(true);
-              setWeatherTutorialCompleted(true);
-              setFinalTutorialCompleted(true);
-            }}
-          >
-            SKIP TUTORIAL
-          </button>
-          <span className="tutorial-text">Use WASD or arrow keys (↑ → ↓ ←) to move around the map.</span>
-        </div>
-      )}
-
-      {tutorialShown && !riverTutorialCompleted && (
-        <div className="tutorial-modal">
-          <button
-            className="skip-tutorial-btn"
-            onClick={() => {
-              setTutorialShown(true);
-              setRiverTutorialCompleted(true);
-              setShopTutorialCompleted(true);
-              setSeedTutorialCompleted(true);
-              setCloseShopTutorialCompleted(true);
-              setPlantTutorialCompleted(true);
-              setWeatherTutorialCompleted(true);
-              setFinalTutorialCompleted(true);
-            }}
-          >
-            SKIP TUTORIAL
-          </button>
-          <span className="tutorial-text">Go to the river and press R to collect water.</span>
-        </div>
-      )}
-
-      {riverTutorialCompleted && !shopTutorialCompleted && (
-        <div className="tutorial-modal">
-          <span className="tutorial-text">Open the shop whit ESC.</span>
-        </div>
-      )}
-
-      {seedTutorialCompleted && !closeShopTutorialCompleted && (
-        <div className="tutorial-modal zindex">
-          <span className="tutorial-text">Close the shop whit ESC and go to the available plot.</span>
-        </div>
-      )}
-
-      {closeShopTutorialCompleted && !plantTutorialCompleted && (
-        <div className="tutorial-modal">
-          <span className="tutorial-text">Go to the plot, press R to water and E to plant.</span>
-        </div>
-      )}
-
-      {plantTutorialCompleted && !weatherTutorialCompleted && (
-        <div className="tutorial-modal">
-          <span className="tutorial-text">Clic on the phone to open</span>
-        </div>
-      )}
-
-      {weatherTutorialCompleted && !finalTutorialCompleted && (
-        <div className="tutorial-modal">
-          <span className="tutorial-text">With the cell phone you can see the weather in the following months.</span>
-          <span className="tutorial-text">You have a limit of 5 actions per month.</span>
-          <span className="tutorial-text">You can skip the month with the Skip Time button at the top.</span>
-          <span className="tutorial-text">Get luck.</span>
-          <button
-          className="finish-tutorial-btn"
-          onClick={() => {
-            setFinalTutorialCompleted(true);
-          }
-          }>Finish the tutorial</button>
-        </div>
-      )}
       </div>
 {/* Rain overlay when weather is Modest or Heavy */}
 {(forecast.label === 'moderada' || forecast.label === 'fuerte') && (
@@ -237,11 +193,11 @@ export default function Game() {
 {showPugCongrats && (
 <div className="pug-congrats-modal">
 <div className="pug-congrats-content">
-<h2>Congratulations!</h2>
-<p>You got the Pug in {pugMonths} months!</p>
+<h2>{t('game.messages.congratulations')}</h2>
+<p>{t('game.messages.pug_achievement', { months: pugMonths })}</p>
 <div className="pug-congrats-buttons">
- <button onClick={() => { if (window.confirm("¿Estás seguro de que quieres salir? Perderás tu progreso.")) { nav("/"); } }}>Exit</button>
- <button onClick={() => setShowPugCongrats(false)}>Continue Playing</button>
+  <button onClick={() => { if (window.confirm(t('game.buttons.exit') + "? " + t('messages.exit_confirm'))) { nav("/"); } }}>{t('game.buttons.exit')}</button>
+  <button onClick={() => setShowPugCongrats(false)}>{t('game.buttons.continue_playing')}</button>
 </div>
 </div>
 </div>

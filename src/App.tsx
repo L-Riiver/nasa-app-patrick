@@ -1,5 +1,8 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { I18nextProvider } from "react-i18next";
+import i18n from "./i18n";
 import Game from "./routes/Game";
 import MapSelector from "./components/MapSelector";
 import farm4future from "./assets/icons/farm4future.png";
@@ -13,6 +16,7 @@ import icon4 from "./assets/icons/icon4.png";
 
 
 const Home = () => {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const [playerName, setPlayerName] = React.useState('Farm4Future');
 
@@ -61,7 +65,7 @@ const Home = () => {
       </div>
 
       <div className="name-input">
-        <label>Farm Name:</label>
+        <label>{t('home.farm_name')}:</label>
         <input
           type="text"
           value={playerName}
@@ -71,20 +75,22 @@ const Home = () => {
         />
       </div>
 
-      <button className="start-btn" onClick={handleStart}>START</button>
+      <button className="start-btn" onClick={handleStart}>{t('home.start')}</button>
     </div>
   );
 }
 
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/map" element={<MapSelector />} />
-        <Route path="/game" element={<Game />} />
-      </Routes>
-    </BrowserRouter>
+    <I18nextProvider i18n={i18n}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/map" element={<MapSelector />} />
+          <Route path="/game" element={<Game />} />
+        </Routes>
+      </BrowserRouter>
+    </I18nextProvider>
   );
 };
 

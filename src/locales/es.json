@@ -1,0 +1,132 @@
+{
+  "home": {
+    "farm_name": "Nombre de la Granja",
+    "start": "INICIAR"
+  },
+  "game": {
+    "title": "Juego F4F",
+    "missions": {
+      "title": "Introducción",
+      "current_mission":"Misión actual",
+      "objective": "Tu objetivo es mantener prácticas agrícolas sostenibles usando datos de la NASA.",
+      "controls": "Bienvenido a F4F, empecemos a crear tu granja. 📌Para moverte utiliza las teclas W A S D o las flechas.",
+      "water_management": "Administra tus recursos de agua sabiamente para mantener tus cultivos saludables.",
+      "shop": "Visita la tienda para comprar semillas, herramientas y mejoras.",
+      "end_turn": "Termina tu turno para avanzar al siguiente mes y ver los efectos de los datos climáticos.",
+      "river_water": "Al lado izquierdo tienes el RÍO 📌Muevete al RÍO y presiona la tecla R para recolectar agua.",
+      "open_shop": "El agua recolectada la verás en el tanque inferior. 📌Presiona la tecla ESC para ver la tienda.",
+      "close_shop": "📌Cierra la tienda con la tecla ESC.",
+      "plant_crop": "En las parcelas verás -💧 si falta regar o +💧 si ya está regada. 📌Muevete a la parcela, presiona R para REGAR y presiona E para PLANTAR la semilla seleccionada.",
+      "open_phone": "Los cultivos crecerán al siguiente mes. 📌Haz clic en el teléfono de la derecha.",
+      "phone_weather": "Aquí podrás ver el clima mensual. Tienes hasta 5 acciones por mes.",
+      "buy_plot": "Hora de expandir tu granja. 📌Compra un plot adicional",
+      "buy_hen": "Con una gallina puedes convertir tus semillas en algo para vender. 📌Compra una gallina",
+      "buy_pet": "Si realizas una buena gestión en poco tiempo ¡Serás millonario!. 📌Compra una mascota (actual final del juego)",
+      "feed_prompt": "Presiona E para alimentar",
+      "skip_tutorial": "CERRAR"
+    },
+    "hud": {
+      "month": "Mes",
+      "water": "Agua",
+      "ndvi": "NDVI",
+      "inventory": "Inventario",
+      "shop": "Tienda",
+      "time": "Tiempo",
+      "actions_left": "Acciones Restantes",
+      "seeds_select": "Semillas (Seleccionar Una)",
+      "crops": "Cultivos",
+      "eggs": "Huevos",
+      "controls": "Controles"
+    },
+    "controls": {
+      "sow_harvest": "Sembrar / Cosechar",
+      "irrigate": "Regar",
+      "next_turn": "Siguiente Turno / Turno",
+      "cycle_seeds": "Cambiar Semillas",
+      "open_shop": "Tienda"
+    },
+    "shop": {
+      "title": "Tienda",
+      "seeds": "Semillas",
+      "tools": "Herramientas",
+      "upgrades": "Mejoras",
+      "corn_seed": "Semilla de Maíz",
+      "potato_seed": "Papa",
+      "blueberry_seed": "Semilla de Arándano",
+      "watering_can": "Regadera",
+      "fertilizer": "Fertilizante",
+      "greenhouse": "Invernadero",
+      "buy": "Comprar",
+      "sell": "Vender",
+      "buy_seed_tutorial": "📌Compra una semilla.",
+      "sell_all": "Vender Todo",
+      "each": "c/u",
+      "plot": "Parcela",
+      "water_tank": "Cisterna",
+      "hen": "Gallina",
+      "pet": "Mascota",
+      "owned":"(Comprado)",
+      "item_descriptions": {
+        "corn_seed": "Planta semillas de maíz para cultivar cosechas de maíz. Cada semilla cuesta 8 monedas.",
+        "potato_seed": "Semillas de papa para cultivar papas. Compra por 5 monedas.",
+        "blueberry_seed": "Semillas de arándano para cosechas de arándano. Precio: 12 monedas.",
+        "plot": "Compra parcelas de tierra adicionales para expandir tu granja. El precio varía según las parcelas que poseas.",
+        "water_tank": "Compra tanques de agua para almacenar agua para riego. Cada tanque cuesta 25 monedas.",
+        "hen": "Compra una gallina que pone huevos. Costo único de 50 monedas.",
+        "pet": "Compra una mascota pug para tu granja. Artículo especial de logro que cuesta 250 monedas.",
+        "corn": "Cosecha y vende cosechas de maíz. Cada maíz se vende por 8 monedas.",
+        "potato": "Vende papas cosechadas. Cada papa se vende por 5 monedas.",
+        "blueberry": "Vende cosechas de arándano. Cada arándano se vende por 12 monedas.",
+        "egg": "Vende huevos producidos por tu gallina. Cada huevo se vende por 3 monedas."
+      }
+    },
+    "plots": {
+      "soil_moisture": "Humedad del Suelo",
+      "plant": "Plantar",
+      "harvest": "Cosechar",
+      "water": "Regar"
+    },
+    "inventory": {
+      "title": "Inventario",
+      "corn": "Maíz",
+      "potato": "Papa",
+      "blueberry": "Arándano",
+      "egg": "Huevo",
+      "seed": "Semilla",
+      "seeds_select":"Seleccionar para plantar:",
+      "crops":"Cultivos",
+      "eggs":"Huevos"
+    },
+    "buttons": {
+      "play": "Jugar",
+      "tutorial": "Tutorial",
+      "exit": "Salir",
+      "end_turn": "Terminar Turno",
+      "close": "Cerrar",
+      "continue_playing": "Continuar Jugando"
+    },
+    "messages": {
+      "no_water": "¡No hay suficiente agua!",
+      "crop_ready": "¡El cultivo está listo para cosechar!",
+      "seed_planted": "¡Semilla plantada!",
+      "insufficient_funds": "¡Fondos insuficientes!",
+      "congratulations": "¡Felicitaciones!",
+      "pug_achievement": "¡Obtuviste el Pug en {{months}} meses!",
+      "exit_confirm": "¿Estás seguro de que quieres salir? Perderás tu progreso."
+    },
+    "weather": {
+      "dry": "Seca",
+      "light": "Ligera",
+      "modest": "Moderada",
+      "heavy": "Fuerte",
+      "humidity": "Humedad",
+      "district": "Distrito"
+    },
+    "map": {
+      "select_region": "Seleccionar Región",
+      "select_district": "Seleccionar Distrito en La Libertad - Perú",
+      "ica_coming_soon": "Ica (Próximamente)",
+      "play_in": "Jugar en"
+    }
+  }
+}

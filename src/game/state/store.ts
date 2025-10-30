@@ -2,9 +2,10 @@ import { create } from "zustand";
 import type {
   Forecast, Inventory, Plot, Player, SeedRef
 } from "../../game/core/types";
-import { INTERACT_RADIUS, PLAYER, SCENE, RIVER_POSITION, MAX_TANK_CAPACITY, ACTIONS_PER_MONTH, EGG_PRICE } from "../../game/core/constants";
+import { INTERACT_RADIUS, PLAYER, SCENE, RIVER_POSITION, MAX_TANK_CAPACITY, ACTIONS_PER_MONTH, EGG_PRICE, PLAYER_INITIAL_POSITION, PLAYER_INITIAL_FACING, INITIAL_WATER_TANKS, INITIAL_CURRENCY, INITIAL_SEED_QUANTITIES } from "../../game/core/constants";
 import ASSETS from "../../assets/gameAssets";
 import { rollForecast, stepGrowth } from "../../game/core/rules";
+import i18n from "../../i18n";
 
 // export type PlotStage = 0|1|2|3|4|5; // 0 suelo, 1 brote… 5 dorado/cosecha
 export type PlotStage = 0|1; // 0 suelo, 1 brote… 5 dorado/cosecha
@@ -82,6 +83,9 @@ type GameState = {
   plantTutorialCompleted: boolean;
   weatherTutorialCompleted: boolean;
   finalTutorialCompleted: boolean;
+  buyPlotTutorialCompleted: boolean;
+  buyHenTutorialCompleted: boolean;
+  buyPetTutorialCompleted: boolean;
   selectedRegion: string;
   selectedDistrict: string;
   playerName: string;
@@ -122,6 +126,9 @@ type GameState = {
   setPlantTutorialCompleted: (completed: boolean) => void;
   setWeatherTutorialCompleted: (completed: boolean) => void;
   setFinalTutorialCompleted: (completed: boolean) => void;
+  setBuyPlotTutorialCompleted: (completed: boolean) => void;
+  setBuyHenTutorialCompleted: (completed: boolean) => void;
+  setBuyPetTutorialCompleted: (completed: boolean) => void;
   plant(): void;                   // si stage 0: siembra; 1-4: crecimiento forzado; 5: cosecha
   harvest(id: string): void;
   feedHen(): void;                 // drop seed on hen to get egg
@@ -179,7 +186,7 @@ const clamp01 = (n: number) => (n < 0 ? 0 : n > 1 ? 1 : n);
 const MOISTURE_IRRIGATION_DELTA = 0.25;
 
 export const useGame = create<GameState>((set, get) => ({
-  player: { x: 360, y: 430, w: PLAYER.w, h: PLAYER.h, facing: "right" },
+  player: { ...PLAYER_INITIAL_POSITION, w: PLAYER.w, h: PLAYER.h, facing: PLAYER_INITIAL_FACING },
   plots: makePlots(1),
   forecast: { mm: 0.5 + Math.random()*1.5, label: "ligera" as const },
   ndvi: 0,
@@ -188,19 +195,20 @@ export const useGame = create<GameState>((set, get) => ({
   weather: nextForecast(),
   drought: false,
   selectedAction: null,
-  resources: { waterTanks: [0], currency: 50, turn: 1, actionsRemaining: ACTIONS_PER_MONTH },
+  resources: { waterTanks: [...INITIAL_WATER_TANKS], currency: INITIAL_CURRENCY, turn: 1, actionsRemaining: ACTIONS_PER_MONTH },
   numPlots: 1,
   isNearRiver: false,
   decorations: [],
   inventory: [
-   { id:"corn-seed", name:"Corn Seed", type:"seed", quantity:0, price: 8, icon:{ type:"emoji", href:"🌽" } },
-   { id:"blueberry-seed", name:"Blueberry Seed", type:"seed", quantity:0, price: 12, icon:{ type:"emoji", href:"🫐" } },
-   { id:"corn", name:"Corn", type:"crop", quantity:0, price: 6, icon:{ type:"emoji", href:"🌽" } },
-   { id:"potato", name:"Potato", type:"crop", quantity:0, price: 3, icon:{ type:"emoji", href:"🥔" } },
-   { id:"blueberry", name:"Blueberry", type:"crop", quantity:0, price: 9, icon:{ type:"emoji", href:"🫐" } },
-   { id:"egg", name:"Egg", type:"egg", quantity:0, price: EGG_PRICE, icon:{ type:"img", href: ASSETS.egg } },
- ],
-  selectedSeedId: "corn-seed",
+    { id:"corn_seed", name:i18n.t('game.shop.corn_seed'), type:"seed", quantity: INITIAL_SEED_QUANTITIES["corn_seed"], price: 8, icon:{ type:"emoji", href:"🌽" } },
+    { id:"potato_seed", name:i18n.t('game.shop.potato_seed'), type:"seed", quantity: INITIAL_SEED_QUANTITIES["potato_seed"], price: 5, icon:{ type:"emoji", href:"🥔" } },
+    { id:"blueberry_seed", name:i18n.t('game.shop.blueberry_seed'), type:"seed", quantity: INITIAL_SEED_QUANTITIES["blueberry_seed"], price: 12, icon:{ type:"emoji", href:"🫐" } },
+    { id:"corn", name:i18n.t('game.inventory.corn'), type:"crop", quantity:0, price: 6, icon:{ type:"emoji", href:"🌽" } },
+    { id:"potato", name:i18n.t('game.inventory.potato'), type:"crop", quantity:0, price: 3, icon:{ type:"emoji", href:"🥔" } },
+    { id:"blueberry", name:i18n.t('game.inventory.blueberry'), type:"crop", quantity:0, price: 9, icon:{ type:"emoji", href:"🫐" } },
+    { id:"egg", name:i18n.t('game.inventory.egg'), type:"egg", quantity:0, price: EGG_PRICE, icon:{ type:"img", href: ASSETS.egg } },
+  ],
+  selectedSeedId: "corn_seed",
 
   showShop: false,
   showControls: false,
@@ -213,6 +221,9 @@ export const useGame = create<GameState>((set, get) => ({
   plantTutorialCompleted: false,
   weatherTutorialCompleted: false,
   finalTutorialCompleted: false,
+  buyPlotTutorialCompleted: false,
+  buyHenTutorialCompleted: false,
+  buyPetTutorialCompleted: false,
     selectedRegion: "",
     selectedDistrict: "",
     playerName: "",
@@ -273,7 +284,7 @@ export const useGame = create<GameState>((set, get) => ({
     const henCenter = { x: 930, y: 350 };
     const distance = Math.hypot(playerCenter.x - henCenter.x, playerCenter.y - henCenter.y);
 
-    const hasValidSeed = get().selectedSeedId === 'corn-seed' || get().selectedSeedId === 'blueberry-seed';
+    const hasValidSeed = get().selectedSeedId === 'corn_seed' || get().selectedSeedId === 'blueberry_seed';
     return distance <= INTERACT_RADIUS && hasValidSeed &&
             get().inventory.some(i => i.id === get().selectedSeedId && i.type === 'seed' && i.quantity >= 1);
   },
@@ -295,12 +306,10 @@ export const useGame = create<GameState>((set, get) => ({
   selectSeed(id){ set({ selectedSeedId: id }); },
   cycleSeed(){
     const seeds = get().inventory.filter(i => i.type==="seed" && i.quantity>0);
-    const plantableCrops = get().inventory.filter(i => i.type==="crop" && i.id==="potato" && i.quantity>0);
-    const all = [...seeds, ...plantableCrops];
-    if (!all.length) return;
+    if (!seeds.length) return;
     const cur = get().selectedSeedId;
-    const idx = all.findIndex(s => s.id===cur);
-    set({ selectedSeedId: all[(idx===-1?0:(idx+1)%all.length)].id });
+    const idx = seeds.findIndex(s => s.id===cur);
+    set({ selectedSeedId: seeds[(idx===-1?0:(idx+1)%seeds.length)].id });
   },
 
   setAction: (a)=> set({selectedAction:a}),
@@ -331,6 +340,9 @@ export const useGame = create<GameState>((set, get) => ({
   setPlantTutorialCompleted: (completed)=> set({plantTutorialCompleted: completed}),
   setWeatherTutorialCompleted: (completed)=> set({weatherTutorialCompleted: completed}),
   setFinalTutorialCompleted: (completed) => set({ finalTutorialCompleted: completed }),
+  setBuyPlotTutorialCompleted: (completed) => set({ buyPlotTutorialCompleted: completed }),
+  setBuyHenTutorialCompleted: (completed) => set({ buyHenTutorialCompleted: completed }),
+  setBuyPetTutorialCompleted: (completed) => set({ buyPetTutorialCompleted: completed }),
   
   setSelectedRegion: (region)=> set({selectedRegion: region}),
   setSelectedDistrict: (district)=> set({selectedDistrict: district}),
@@ -360,7 +372,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (!selId) return;
 
       const inv = structuredClone(get().inventory) as Inventory;
-      const seedItem = inv.find(i => i.id===selId && (i.type==="seed" || (i.type==="crop" && i.id==="potato")));
+      const seedItem = inv.find(i => i.id===selId && i.type==="seed");
       if (!seedItem || seedItem.quantity <= 0) return;
 
       seedItem.quantity -= 1; // Seeds now cost 1 unit per planting (but will plant 2 seeds per action)
@@ -395,37 +407,54 @@ export const useGame = create<GameState>((set, get) => ({
 
     const inv = structuredClone(get().inventory) as Inventory;
 
-    // Normalize seed name to a produce name (remove trailing "Seed")
-    const seedName = p.seed.name || "";
-    const produceName = seedName.replace(/\s*[Ss]eed$/,'').trim() || seedName;
-
-    // Try to find an existing crop by produce name first, then by seed id
-    let crop = inv.find(i => i.type === "crop" && i.name === produceName) as (typeof inv)[number] | undefined;
-    if (!crop) {
-      if (produceName === 'Potato') crop = inv.find(i => i.type === "crop" && i.name === "Potato");
-      else if (produceName === 'Blueberry Seed') crop = inv.find(i => i.type === "crop" && i.name === "Blueberry");
-      else crop = inv.find(i => i.type === "crop" && i.id === p.seed!.id);
-    }
-
-    const harvestQuantity = produceName === 'Potato' ? 6 : produceName === 'Corn' ? 4 : produceName === 'Blueberry' ? 6 : 1; // More realistic yields
-
-    if (crop) {
-      crop.quantity += harvestQuantity;
+    // For potatoes, return the harvested quantity as seeds instead of crops
+    if (p.seed!.id === 'potato_seed') {
+      const seedId = 'potato_seed';
+      const harvestedSeedName = i18n.t('game.shop.potato_seed');
+      const seedsToReturn = 6;
+      let seedItem = inv.find(i => i.id === seedId && i.type === "seed");
+      if (seedItem) {
+        seedItem.quantity += seedsToReturn;
+      } else {
+        inv.push({ id: seedId, name: harvestedSeedName, type: "seed", quantity: seedsToReturn, price: 5, icon: p.seed!.icon });
+      }
     } else {
-      // create a slug id from the produce name
-      const idSlug = produceName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || p.seed.id;
-      inv.push({ id: idSlug, name: produceName, type:"crop", quantity: harvestQuantity, price: produceName === 'Corn' ? 6 : produceName === 'Potato' ? 3 : 9, icon: p.seed.icon });
-    }
+      // For other crops, harvest normally
+      let produceName, harvestQuantity;
+      if (p.seed!.id === 'corn_seed') {
+        produceName = i18n.t('game.inventory.corn');
+        harvestQuantity = 4;
+      } else if (p.seed!.id === 'blueberry_seed') {
+        produceName = i18n.t('game.inventory.blueberry');
+        harvestQuantity = 6;
+      } else {
+        produceName = p.seed!.name;
+        harvestQuantity = 1;
+      }
 
-    // Return 2 seeds back to inventory after harvest (only for corn and blueberries, not potatoes)
-    const seedId = p.seed!.id;
-    const harvestedSeedName = p.seed!.name;
-    if (harvestedSeedName !== 'Potato') {
+      // Try to find an existing crop by produce name first
+      let crop = inv.find(i => i.type === "crop" && i.name === produceName) as (typeof inv)[number] | undefined;
+      if (!crop) {
+        // Fallback to find by ID if name doesn't match
+        crop = inv.find(i => i.type === "crop" && i.id === p.seed!.id);
+      }
+
+      if (crop) {
+        crop.quantity += harvestQuantity;
+      } else {
+        // create a slug id from the produce name
+        const idSlug = produceName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || p.seed.id;
+        inv.push({ id: idSlug, name: produceName, type:"crop", quantity: harvestQuantity, price: produceName === i18n.t('game.inventory.corn') ? 6 : produceName === i18n.t('game.inventory.potato') ? 3 : 9, icon: p.seed.icon });
+      }
+
+      // Return 2 seeds back to inventory after harvest for corn and blueberry
+      const seedId = p.seed!.id;
+      const harvestedSeedName = p.seed!.name;
       let seedItem = inv.find(i => i.id === seedId && i.type === "seed");
       if (seedItem) {
         seedItem.quantity += 2;
       } else {
-        inv.push({ id: seedId, name: harvestedSeedName, type: "seed", quantity: 2, price: harvestedSeedName === 'Corn Seed' ? 8 : harvestedSeedName === 'Blueberry Seed' ? 12 : 0, icon: p.seed!.icon });
+        inv.push({ id: seedId, name: harvestedSeedName, type: "seed", quantity: 2, price: harvestedSeedName === i18n.t('game.shop.corn_seed') ? 8 : harvestedSeedName === i18n.t('game.shop.blueberry_seed') ? 12 : 0, icon: p.seed!.icon });
       }
     }
 
@@ -450,7 +479,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!hasHen) return;
 
     // Only allow corn and blueberry seeds (not potato)
-    if (!selectedSeedId || (selectedSeedId !== 'corn-seed' && selectedSeedId !== 'blueberry-seed')) return;
+    if (!selectedSeedId || (selectedSeedId !== 'corn_seed' && selectedSeedId !== 'blueberry_seed')) return;
 
     // Check if player has enough of the selected seed (now costs 1)
     const seedItem = inventory.find(i => i.id === selectedSeedId && i.type === 'seed' && i.quantity >= 1);
@@ -472,7 +501,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (eggItem) {
         eggItem.quantity += 2;
       } else {
-        inv.push({ id: 'egg', name: 'Egg', type: 'egg', quantity: 2, price: EGG_PRICE, icon: { type: 'img', href: ASSETS.egg } });
+        inv.push({ id: 'egg', name: i18n.t('game.inventory.egg'), type: 'egg', quantity: 2, price: EGG_PRICE, icon: { type: 'img', href: ASSETS.egg } });
       }
 
       set(s => ({
@@ -652,9 +681,21 @@ export const useGame = create<GameState>((set, get) => ({
     plantTutorialCompleted: false,
     weatherTutorialCompleted: false,
     finalTutorialCompleted: false,
+    buyPlotTutorialCompleted: false,
+    buyHenTutorialCompleted: false,
+    buyPetTutorialCompleted: false,
     selectedRegion: "",
     selectedDistrict: "",
     playerName: "",
-    resources: { waterTanks: [0], currency: 50, turn: 1, actionsRemaining: ACTIONS_PER_MONTH }
+    player: { ...PLAYER_INITIAL_POSITION, w: PLAYER.w, h: PLAYER.h, facing: PLAYER_INITIAL_FACING },
+    inventory: [
+      { id:"corn_seed", name:i18n.t('game.shop.corn_seed'), type:"seed", quantity: INITIAL_SEED_QUANTITIES["corn_seed"], price: 8, icon:{ type:"emoji", href:"🌽" } },
+      { id:"blueberry_seed", name:i18n.t('game.shop.blueberry_seed'), type:"seed", quantity: INITIAL_SEED_QUANTITIES["blueberry_seed"], price: 12, icon:{ type:"emoji", href:"🫐" } },
+      { id:"corn", name:i18n.t('game.inventory.corn'), type:"crop", quantity:0, price: 6, icon:{ type:"emoji", href:"🌽" } },
+      { id:"potato", name:i18n.t('game.inventory.potato'), type:"crop", quantity:0, price: 3, icon:{ type:"emoji", href:"🥔" } },
+      { id:"blueberry", name:i18n.t('game.inventory.blueberry'), type:"crop", quantity:0, price: 9, icon:{ type:"emoji", href:"🫐" } },
+      { id:"egg", name:i18n.t('game.inventory.egg'), type:"egg", quantity:0, price: EGG_PRICE, icon:{ type:"img", href: ASSETS.egg } },
+    ],
+    resources: { waterTanks: [...INITIAL_WATER_TANKS], currency: INITIAL_CURRENCY, turn: 1, actionsRemaining: ACTIONS_PER_MONTH }
   })
 }));

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useInventory } from '../hooks/useInventory';
 import { useGame } from '../game/state/store';
 import type { InventoryItem } from '../game/core/types';
@@ -6,6 +7,7 @@ import TurnCounter from './HUD/TurnCounter';
 import ActionBar from './HUD/ActionBar';
 
 export const HUDPanel: React.FC<HUDPanelProps> = ({ showControls, setShowControls }) => {
+  const { t } = useTranslation();
   const { seeds, crops, eggs, selectedSeedId, selectSeed } = useInventory();
   const { resources, toggleShop, nextTurn } = useGame();
 
@@ -18,8 +20,8 @@ export const HUDPanel: React.FC<HUDPanelProps> = ({ showControls, setShowControl
     <div className="hud-panel">
       <TurnCounter currentTurn={resources.turn} onNextTurn={nextTurn} />
       <ActionBar />
-      <div className="hud-section">
-        <h4>Seeds (Select One)</h4>
+      <div className="hud-section scrollable">
+        <h4>{t('game.inventory.seeds_select')}</h4>
         {seeds.map(item => (
           <div
             key={item.id}
@@ -33,10 +35,10 @@ export const HUDPanel: React.FC<HUDPanelProps> = ({ showControls, setShowControl
           </div>
         ))}
 
-        
+
       </div>
-      <div className="hud-section">
-        <h4>Crops</h4>
+      <div className="hud-section scrollable">
+        <h4>{t('game.inventory.crops')}</h4>
         {crops.map(item => (
           <div key={item.id} className="inventory-item">
             {item.icon.href} {item.name}: {item.quantity}
@@ -44,7 +46,7 @@ export const HUDPanel: React.FC<HUDPanelProps> = ({ showControls, setShowControl
         ))}
       </div>
       <div className="hud-section">
-        <h4>Eggs</h4>
+        <h4>{t('game.inventory.eggs')}</h4>
         {eggs.map(item => (
           <div key={item.id} className="inventory-item">
             {item.icon.type === 'img' ? <img src={item.icon.href} alt={item.name} width="20" height="20" /> : item.icon.href} {item.name}: {item.quantity}
@@ -63,18 +65,18 @@ export const HUDPanel: React.FC<HUDPanelProps> = ({ showControls, setShowControl
       </div>
       <div className="hud-buttons">
         <button className="shop-btn" onClick={toggleShop}>
-          Shop
+          {t('game.hud.shop')}
         </button>
         <button className="controls-btn" onClick={() => setShowControls(!showControls)}>
-          Controls
+          {t('game.hud.controls')}
         </button>
       </div>
         <div className={`controls-popup ${showControls ? 'show':''}`}>
-          <strong>E:</strong> Sow / Harvest<br/>
-          <strong>R:</strong> Irrigate / Regar<br/>
-          <strong>N:</strong> Turn / Turno<br/>
-          <strong>TAB:</strong> Cycle Seeds<br/>
-          <strong>ESC:</strong> Shop
+          <strong>E:</strong> {t('game.controls.sow_harvest')}<br/>
+          <strong>R:</strong> {t('game.controls.irrigate')}<br/>
+          <strong>N:</strong> {t('game.controls.next_turn')}<br/>
+          <strong>TAB:</strong> {t('game.controls.cycle_seeds')}<br/>
+          <strong>ESC:</strong> {t('game.controls.open_shop')}
         </div>
     </div>
   );

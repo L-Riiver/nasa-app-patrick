@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useGame } from '../game/state/store';
 import ASSETS from '../assets/gameAssets';
 
@@ -19,6 +20,7 @@ const districts = [
 ];
 
 export default function MapSelector() {
+  const { t } = useTranslation();
    const [selectedRegion, setSelectedRegion] = useState('La Libertad');
    const [showDistricts, setShowDistricts] = useState(true);
    const [hoveredDistrict, setHoveredDistrict] = useState('');
@@ -54,7 +56,7 @@ export default function MapSelector() {
 
   return (
     <div className="map-selector-screen">
-      <h1>Select Region</h1>
+      <h1>{t('game.map.select_region')}</h1>
       <div className="region-options">
         <label>
           <input
@@ -75,13 +77,13 @@ export default function MapSelector() {
             disabled
             onChange={() => handleRegionChange('Ica')}
           />
-          Ica (Coming Soon)
+          {t('game.map.ica_coming_soon')}
         </label>
       </div>
 
       {showDistricts && (
         <div className="district-map">
-          <h2>Select District in La Libertad - Perú</h2>
+          <h2>{t('game.map.select_district')}</h2>
           <div className="map-container">
             <img src={ASSETS.laLibertadMap} alt="La Libertad Map" className="map-image" />
             {districts.map((district) => (
@@ -102,7 +104,7 @@ export default function MapSelector() {
               </div>
             ))}
           </div>
-          <p className="district-name-display">Play in {hoveredDistrict && <span>{hoveredDistrict}</span>}</p>
+          <p className="district-name-display">{t('game.map.play_in')} {hoveredDistrict && <span>{hoveredDistrict}</span>}</p>
         </div>
       )}
     </div>

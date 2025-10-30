@@ -10,8 +10,8 @@ export const useInventory = () => {
     setInventory
   } = useGame();
 
-  const seeds: InventoryItem[] = inventory.filter(item => (item.type === 'seed' || (item.type === 'crop' && item.id === 'potato')) && item.quantity > 0);
-  const crops: InventoryItem[] = inventory.filter(item => item.type === 'crop' && item.id !== 'potato' && item.quantity > 0);
+  const seeds: InventoryItem[] = inventory.filter(item => item.type === 'seed' && item.quantity > 0);
+  const crops: InventoryItem[] = inventory.filter(item => item.type === 'crop' && item.quantity > 0);
   const eggs: InventoryItem[] = inventory.filter(item => item.type === 'egg' && item.quantity > 0);
 
   const availableSeeds = seeds.filter(seed => seed.quantity > 0);
